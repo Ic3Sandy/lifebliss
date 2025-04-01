@@ -76,35 +76,23 @@ class _HomePageBody extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Text(
-            'Lifebliss',
-            style: TextStyle(
-              color: Colors.blue.shade900,
-              fontSize: screenSize.width < 600 ? 40 : 72,
-              fontWeight: FontWeight.bold,
-              letterSpacing: 2.0,
-              shadows: [
-                Shadow(
-                  blurRadius: 10.0,
-                  color: Colors.blue.withOpacity(0.5),
-                  offset: const Offset(5.0, 5.0),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 30),
-          ElevatedButton(
-            key: const Key('change_color_button'),
-            onPressed: changeBackgroundColor,
-            style: ElevatedButton.styleFrom(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
+          GestureDetector(
+            onTap: changeBackgroundColor,
+            child: Text(
+              'Lifebliss',
+              style: TextStyle(
+                color: Colors.blue.shade900,
+                fontSize: screenSize.width < 600 ? 40 : 72,
+                fontWeight: FontWeight.bold,
+                letterSpacing: 2.0,
+                shadows: [
+                  Shadow(
+                    blurRadius: 10.0,
+                    color: Colors.blue.withOpacity(0.5),
+                    offset: const Offset(5.0, 5.0),
+                  ),
+                ],
               ),
-            ),
-            child: const Text(
-              'Change Color',
-              style: TextStyle(fontSize: 16),
             ),
           ),
         ],

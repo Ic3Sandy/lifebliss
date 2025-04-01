@@ -99,7 +99,7 @@ void main() {
       expect(textWidget.style?.fontWeight, FontWeight.bold);
     });
 
-    testWidgets('should display a button to change background color', (WidgetTester tester) async {
+    testWidgets('should change background color when title is tapped', (WidgetTester tester) async {
       // Build the HomePage widget
       await tester.pumpWidget(
         const MaterialApp(
@@ -107,9 +107,24 @@ void main() {
         ),
       );
 
-      // Verify that the button is displayed using the key
-      expect(find.byKey(const Key('change_color_button')), findsOneWidget);
-      expect(find.text('Change Color'), findsOneWidget);
+      // Get the initial background colors
+      final initialContainer = tester.widget<Container>(find.byKey(const Key('background_container')));
+      final initialDecoration = initialContainer.decoration as BoxDecoration;
+      final initialGradient = initialDecoration.gradient as LinearGradient;
+      final initialColors = initialGradient.colors;
+
+      // Find and tap the title text
+      await tester.tap(find.text('Lifebliss'));
+      await tester.pump();
+
+      // Get the new background colors
+      final updatedContainer = tester.widget<Container>(find.byKey(const Key('background_container')));
+      final updatedDecoration = updatedContainer.decoration as BoxDecoration;
+      final updatedGradient = updatedDecoration.gradient as LinearGradient;
+      final updatedColors = updatedGradient.colors;
+
+      // Verify that the background colors have changed
+      expect(updatedColors, isNot(equals(initialColors)));
     });
   });
 }
