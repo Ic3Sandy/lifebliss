@@ -68,13 +68,14 @@ void main() {
         ),
       );
 
-      // Find the container with the gradient
-      final container = tester.widget<Container>(find.byType(Container).first);
+      // Find the container with the gradient using the key
+      final container = tester.widget<Container>(find.byKey(const Key('background_container')));
       final decoration = container.decoration as BoxDecoration;
       final gradient = decoration.gradient as LinearGradient;
       
       // Verify gradient properties
       expect(gradient.colors.length, 2);
+      // The initial colors should be white and blue
       expect(gradient.colors[0], Colors.white);
       expect(gradient.colors[1], Colors.blue);
       expect(gradient.begin, Alignment.topCenter);
@@ -96,6 +97,19 @@ void main() {
       expect(textWidget.style?.shadows?.isNotEmpty, isTrue);
       expect(textWidget.style?.letterSpacing, 2.0);
       expect(textWidget.style?.fontWeight, FontWeight.bold);
+    });
+
+    testWidgets('should display a button to change background color', (WidgetTester tester) async {
+      // Build the HomePage widget
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: HomePage(),
+        ),
+      );
+
+      // Verify that the button is displayed using the key
+      expect(find.byKey(const Key('change_color_button')), findsOneWidget);
+      expect(find.text('Change Color'), findsOneWidget);
     });
   });
 }
