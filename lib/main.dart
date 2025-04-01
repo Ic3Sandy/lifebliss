@@ -5,6 +5,7 @@ void main() {
   runApp(const MyApp());
 }
 
+/// The root application widget
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 

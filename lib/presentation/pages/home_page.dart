@@ -9,7 +9,7 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  final List<List<Color>> _colorPairs = [
+  static const List<List<Color>> kColorPairs = [
     [Colors.white, Colors.blue],
     [Colors.pink, Colors.purple],
     [Colors.amber, Colors.orange],
@@ -23,11 +23,14 @@ class _HomePageState extends State<HomePage> {
   final Random _random = Random();
 
   void _changeBackgroundColor() {
+    if (kColorPairs.length <= 1) return;
+    
     setState(() {
+      // Generate a new random index different from the current one
       int newIndex;
       do {
-        newIndex = _random.nextInt(_colorPairs.length);
-      } while (newIndex == _currentColorPairIndex && _colorPairs.length > 1);
+        newIndex = _random.nextInt(kColorPairs.length);
+      } while (newIndex == _currentColorPairIndex);
       
       _currentColorPairIndex = newIndex;
     });
@@ -35,11 +38,9 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    final screenSize = MediaQuery.of(context).size;
-    
     return Scaffold(
       body: _HomePageBody(
-        colorPairs: _colorPairs,
+        colorPairs: kColorPairs,
         currentColorPairIndex: _currentColorPairIndex,
         changeBackgroundColor: _changeBackgroundColor,
       ),
@@ -80,23 +81,27 @@ class _HomePageBody extends StatelessWidget {
             onTap: changeBackgroundColor,
             child: Text(
               'Lifebliss',
-              style: TextStyle(
-                color: Colors.blue.shade900,
-                fontSize: screenSize.width < 600 ? 40 : 72,
-                fontWeight: FontWeight.bold,
-                letterSpacing: 2.0,
-                shadows: [
-                  Shadow(
-                    blurRadius: 10.0,
-                    color: Colors.blue.withOpacity(0.5),
-                    offset: const Offset(5.0, 5.0),
-                  ),
-                ],
-              ),
+              style: _getTitleTextStyle(screenSize.width, context),
             ),
           ),
         ],
       ),
+    );
+  }
+  
+  TextStyle _getTitleTextStyle(double screenWidth, BuildContext context) {
+    return TextStyle(
+      color: Colors.blue.shade900,
+      fontSize: screenWidth < 600 ? 40 : 72,
+      fontWeight: FontWeight.bold,
+      letterSpacing: 2.0,
+      shadows: [
+        Shadow(
+          blurRadius: 10.0,
+          color: Colors.blue.withOpacity(0.5),
+          offset: const Offset(5.0, 5.0),
+        ),
+      ],
     );
   }
 }
