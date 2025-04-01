@@ -30,7 +30,7 @@ class HomePage extends StatelessWidget {
               shadows: [
                 Shadow(
                   blurRadius: 10.0,
-                  color: Colors.blue.withOpacity(0.5),
+                  color: Colors.blue.withValues(alpha: 0.5),
                   offset: const Offset(5.0, 5.0),
                 ),
               ],

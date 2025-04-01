@@ -18,8 +18,8 @@ void main() {
 
     testWidgets('should use responsive font size based on screen width - small screen', (WidgetTester tester) async {
       // Set up a small screen size
-      tester.binding.window.physicalSizeTestValue = const Size(300, 600);
-      tester.binding.window.devicePixelRatioTestValue = 1.0;
+      tester.view.physicalSize = const Size(300, 600);
+      tester.view.devicePixelRatio = 1.0;
 
       // Build the HomePage widget with small screen
       await tester.pumpWidget(
@@ -35,13 +35,13 @@ void main() {
       expect((textWidget.style?.fontSize ?? 0) <= 40, isTrue);
 
       // Reset the screen size to avoid affecting other tests
-      addTearDown(tester.binding.window.clearPhysicalSizeTestValue);
+      addTearDown(() => tester.view.resetPhysicalSize());
     });
 
     testWidgets('should use responsive font size based on screen width - large screen', (WidgetTester tester) async {
       // Set up a large screen size
-      tester.binding.window.physicalSizeTestValue = const Size(1200, 800);
-      tester.binding.window.devicePixelRatioTestValue = 1.0;
+      tester.view.physicalSize = const Size(1200, 800);
+      tester.view.devicePixelRatio = 1.0;
 
       // Build the HomePage widget with large screen
       await tester.pumpWidget(
@@ -57,7 +57,7 @@ void main() {
       expect((textWidget.style?.fontSize ?? 0) > 40, isTrue);
 
       // Reset the screen size to avoid affecting other tests
-      addTearDown(tester.binding.window.clearPhysicalSizeTestValue);
+      addTearDown(() => tester.view.resetPhysicalSize());
     });
 
     testWidgets('should have gradient background', (WidgetTester tester) async {

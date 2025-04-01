@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:lifebliss_app/main.dart';
 import 'package:lifebliss_app/presentation/pages/loading_page.dart';
 import 'package:lifebliss_app/presentation/pages/home_page.dart';
 
@@ -77,8 +76,8 @@ void main() {
 
     testWidgets('should use responsive font size based on screen width', (WidgetTester tester) async {
       // Set up a small screen size
-      tester.binding.window.physicalSizeTestValue = const Size(300, 600);
-      tester.binding.window.devicePixelRatioTestValue = 1.0;
+      tester.view.physicalSize = const Size(300, 600);
+      tester.view.devicePixelRatio = 1.0;
 
       // Build the HomePage widget with small screen
       await tester.pumpWidget(
@@ -94,7 +93,7 @@ void main() {
       expect((textWidget.style?.fontSize ?? 0) <= 40, isTrue);
 
       // Reset the screen size to avoid affecting other tests
-      addTearDown(tester.binding.window.clearPhysicalSizeTestValue);
+      addTearDown(() => tester.view.resetPhysicalSize());
     });
   });
 }
