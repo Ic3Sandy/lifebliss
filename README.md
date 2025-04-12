@@ -28,21 +28,22 @@ flutter pub get
 
 ### Running the app
 
-#### For development:
+#### On a connected device/emulator (Android/iOS):
 ```
-flutter run -d chrome
+# Make sure a device is connected or an emulator is running
+flutter run
 ```
 
 #### For web development:
 ```
-# Enable web support if not already enabled
-flutter config --enable-web
+# Enable web support if not already enabled (run only once)
+# flutter config --enable-web
 
 # Run for web on Chrome
 flutter run -d chrome
 
-# Run for web with a specific port
-flutter run -d chrome --web-port=8080
+# Optional: Run for web with a specific port
+# flutter run -d chrome --web-port=8080
 ```
 
 #### Build for web:
@@ -69,10 +70,13 @@ The project follows a clean architecture approach:
 - Smooth navigation between screens
 - Web-optimized UI
 
+## Development
+
+This project follows Test-Driven Development (TDD) principles. Please ensure you write tests for your code *before* implementing the functionality.
+
+To run the tests:
+```
+flutter test
+```
+
 ## Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
-
-## License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
