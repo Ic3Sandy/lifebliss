@@ -44,13 +44,53 @@ class MockPlatformWebViewWidget extends PlatformWebViewWidget {
 class MockPlatformWebViewController extends PlatformWebViewController {
   MockPlatformWebViewController(super.params)
       : super.implementation();
-  @override Future<void> loadRequest(LoadRequestParams params) async { }
+      
+  // Track resource loading for testing
+  String? lastLoadedHtml;
+  String? lastLoadedUrl;
+  String? lastExecutedJavaScript;
+  
+  // Track javascript executions
+  final List<String> executedJavaScripts = [];
+  
+  @override 
+  Future<void> loadRequest(LoadRequestParams params) async { 
+    if (params.uri.scheme == 'data') {
+      lastLoadedHtml = Uri.decodeComponent(params.uri.toString().split(',')[1]);
+    } else {
+      lastLoadedUrl = params.uri.toString();
+    }
+  }
+  
+  @override
+  Future<void> loadHtmlString(String html, {String? baseUrl}) async {
+    lastLoadedHtml = html;
+  }
+  
+  @override
+  Future<void> runJavaScript(String javaScript) async {
+    lastExecutedJavaScript = javaScript;
+    executedJavaScripts.add(javaScript);
+  }
+  
+  @override
+  Future<Object> runJavaScriptReturningResult(String javaScript) async {
+    lastExecutedJavaScript = javaScript;
+    executedJavaScripts.add(javaScript);
+    
+    // Simple mock implementation to return a boolean for document.getElementById check
+    if (javaScript.contains('document.getElementById')) {
+      return true;
+    }
+    
+    return Object();
+  }
+  
   @override Future<void> setPlatformNavigationDelegate(PlatformNavigationDelegate handler) async { }
   @override Future<void> setJavaScriptMode(JavaScriptMode mode) async { }
   @override Future<void> setBackgroundColor(Color color) async { }
-  @override Future<void> loadHtmlString(String html, {String? baseUrl}) async { }
   @override Future<void> loadFile(String absoluteFilePath) async { }
-  @override Future<String?> currentUrl() async => null;
+  @override Future<String?> currentUrl() async => lastLoadedUrl;
   @override Future<bool> canGoBack() async => false;
   @override Future<bool> canGoForward() async => false;
   @override Future<void> goBack() async { }
@@ -58,8 +98,6 @@ class MockPlatformWebViewController extends PlatformWebViewController {
   @override Future<void> reload() async { }
   @override Future<void> clearCache() async { }
   @override Future<void> clearLocalStorage() async { }
-  @override Future<void> runJavaScript(String javaScript) async { }
-  @override Future<Object> runJavaScriptReturningResult(String javaScript) async => Object();
   @override Future<void> addJavaScriptChannel(JavaScriptChannelParams javaScriptChannelParams) async { }
   @override Future<void> removeJavaScriptChannel(String javaScriptChannelName) async { }
   @override Future<String?> getTitle() async => null;

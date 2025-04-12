@@ -5,7 +5,8 @@ import 'test_mocks.dart';
 
 /// Sets up the mock WebView platform for testing
 void setupMockWebViewPlatform() {
-  WebViewPlatform.instance = MockWebViewPlatform();
+  final mockPlatform = MockWebViewPlatform();
+  WebViewPlatform.instance = mockPlatform;
 }
 
 /// Wraps a widget in a MaterialApp for testing
@@ -13,6 +14,25 @@ Widget testableWidget(Widget child) {
   return MaterialApp(
     home: child,
   );
+}
+
+/// Wraps a widget in a MaterialApp with specific dimensions for responsive testing
+Widget responsiveTestableWidget(Widget child, {required double width, required double height}) {
+  return MaterialApp(
+    home: MediaQuery(
+      data: MediaQueryData(size: Size(width, height)),
+      child: child,
+    ),
+  );
+}
+
+/// Common device sizes for responsive testing
+class DeviceSizes {
+  static const Size mobileSmall = Size(320, 568);  // iPhone SE
+  static const Size mobileMedium = Size(375, 667); // iPhone 8
+  static const Size mobileLarge = Size(414, 896);  // iPhone 11 Pro Max
+  static const Size tablet = Size(768, 1024);      // iPad
+  static const Size desktop = Size(1366, 768);     // Common laptop
 }
 
 /// Asserts that a timer-based navigation happens within the expected timeframe
