@@ -27,6 +27,18 @@
                     titleElement.style.transform = 'translate(-50%, -50%)'; 
                     titleElement.style.width = '90%'; 
                     titleElement.style.textAlign = 'center';
+                    
+                    // Add cursor style to indicate it's clickable
+                    titleElement.style.cursor = 'pointer';
+                    
+                    // Add click event listener to change background color
+                    let colorIndex = 0;
+                    const bgColors = ['#f0f0f0', '#e6f7ff', '#fff0f5', '#f0fff0', '#fff8dc'];
+                    
+                    titleElement.addEventListener('click', function() {
+                        colorIndex = (colorIndex + 1) % bgColors.length;
+                        document.body.style.backgroundColor = bgColors[colorIndex];
+                    });
                 }
             }, 100); // Keep the small delay for stability
         };
