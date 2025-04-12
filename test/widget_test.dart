@@ -2,8 +2,113 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:lifebliss_app/presentation/pages/loading_page.dart';
 import 'package:lifebliss_app/presentation/pages/home_page.dart';
+import 'package:webview_flutter_platform_interface/webview_flutter_platform_interface.dart';
+import 'package:webview_flutter/webview_flutter.dart';
+import 'package:webview_flutter_platform_interface/src/types/types.dart' hide WebViewPlatform;
+
+// --- Paste the MockWebViewPlatform, MockPlatformWebViewWidget, MockPlatformWebViewController classes here ---
+class MockWebViewPlatform extends WebViewPlatform {
+  @override
+  PlatformWebViewWidget createPlatformWebViewWidget(
+    PlatformWebViewWidgetCreationParams params,
+  ) {
+    return MockPlatformWebViewWidget(params);
+  }
+
+  @override
+  PlatformWebViewController createPlatformWebViewController(
+    PlatformWebViewControllerCreationParams params,
+  ) {
+    return MockPlatformWebViewController(params);
+  }
+
+  @override
+  PlatformNavigationDelegate createPlatformNavigationDelegate(
+      PlatformNavigationDelegateCreationParams params) {
+    return MockPlatformNavigationDelegate(params);
+  }
+}
+
+class MockPlatformWebViewWidget extends PlatformWebViewWidget {
+  MockPlatformWebViewWidget(super.params)
+      : super.implementation();
+
+  @override
+  Widget build(BuildContext context) {
+    return const SizedBox(
+      key: ValueKey('MockPlatformWebViewWidget'),
+      width: 100,
+      height: 100,
+    );
+  }
+}
+
+class MockPlatformWebViewController extends PlatformWebViewController {
+  MockPlatformWebViewController(super.params)
+      : super.implementation();
+  @override Future<void> loadRequest(LoadRequestParams params) async { }
+  @override Future<void> setPlatformNavigationDelegate(PlatformNavigationDelegate handler) async { }
+  @override Future<void> setJavaScriptMode(JavaScriptMode mode) async { }
+  @override Future<void> setBackgroundColor(Color color) async { }
+  @override Future<void> loadHtmlString(String html, {String? baseUrl}) async { }
+  @override Future<void> loadFile(String absoluteFilePath) async { }
+  @override Future<String?> currentUrl() async => null;
+  @override Future<bool> canGoBack() async => false;
+  @override Future<bool> canGoForward() async => false;
+  @override Future<void> goBack() async { }
+  @override Future<void> goForward() async { }
+  @override Future<void> reload() async { }
+  @override Future<void> clearCache() async { }
+  @override Future<void> clearLocalStorage() async { }
+  @override Future<void> runJavaScript(String javaScript) async { }
+  @override Future<Object> runJavaScriptReturningResult(String javaScript) async => Object();
+  @override Future<void> addJavaScriptChannel(JavaScriptChannelParams javaScriptChannelParams) async { }
+  @override Future<void> removeJavaScriptChannel(String javaScriptChannelName) async { }
+  @override Future<String?> getTitle() async => null;
+  @override Future<void> scrollTo(int x, int y) async { }
+  @override Future<void> scrollBy(int x, int y) async { }
+  @override Future<Offset> getScrollPosition() async => Offset.zero;
+  @override Future<void> enableZoom(bool enabled) async { }
+  @override Future<void> setMediaPlaybackRequiresUserGesture(bool require) async { }
+  @override Future<void> setUserAgent(String? userAgent) async { }
+}
+
+class MockPlatformNavigationDelegate extends PlatformNavigationDelegate {
+  MockPlatformNavigationDelegate(super.params)
+      : super.implementation();
+
+  @override
+  Future<void> setOnPageStarted(PageEventCallback onPageStarted) async {}
+
+  @override
+  Future<void> setOnPageFinished(PageEventCallback onPageFinished) async {}
+
+  @override
+  Future<void> setOnProgress(ProgressCallback onProgress) async {}
+
+  @override
+  Future<void> setOnWebResourceError(WebResourceErrorCallback onWebResourceError) async {}
+
+  @override
+  Future<void> setOnNavigationRequest(NavigationRequestCallback onNavigationRequest) async {}
+
+  @override
+  Future<void> setOnUrlChange(UrlChangeCallback onUrlChange) async {}
+  
+  @override
+  Future<void> setOnHttpAuthRequest(HttpAuthRequestCallback onHttpAuthRequest) async {}
+  
+  @override
+  Future<void> setOnHttpError(HttpResponseErrorCallback onHttpError) async {}
+}
+// --- End of pasted mock classes ---
 
 void main() {
+  setUp(() {
+    // Set the mock platform implementation before each test
+    WebViewPlatform.instance = MockWebViewPlatform();
+  });
+
   group('MyApp', () {
     testWidgets('should display LoadingPage as home', (WidgetTester tester) async {
       // Override the LoadingPage to disable auto-navigation for testing
@@ -62,38 +167,15 @@ void main() {
   });
 
   group('HomePage', () {
-    testWidgets('should display app title', (WidgetTester tester) async {
+    testWidgets('should display WebViewWidget', (WidgetTester tester) async {
       // Build the HomePage widget
       await tester.pumpWidget(
         const MaterialApp(
           home: HomePage(),
         ),
       );
-
-      // Verify that the app title is displayed
-      expect(find.text('Lifebliss'), findsOneWidget);
-    });
-
-    testWidgets('should use responsive font size based on screen width', (WidgetTester tester) async {
-      // Set up a small screen size
-      tester.view.physicalSize = const Size(300, 600);
-      tester.view.devicePixelRatio = 1.0;
-
-      // Build the HomePage widget with small screen
-      await tester.pumpWidget(
-        const MaterialApp(
-          home: HomePage(),
-        ),
-      );
-
-      // Find the text widget
-      final textWidget = tester.widget<Text>(find.text('Lifebliss'));
-      
-      // Verify font size for small screen
-      expect((textWidget.style?.fontSize ?? 0) <= 40, isTrue);
-
-      // Reset the screen size to avoid affecting other tests
-      addTearDown(() => tester.view.resetPhysicalSize());
+      // Verify that the WebViewWidget is displayed (via the mock)
+      expect(find.byType(WebViewWidget), findsOneWidget);
     });
   });
 }

@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Home Page</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <h1 id="app-title">Lifebliss</h1>
+    <!-- <p>This content is rendered via WebView.</p> -->
+
+    <script>
+        window.onload = function() {
+            setTimeout(() => {
+                const titleElement = document.getElementById('app-title');
+                if (titleElement) {
+                    // Remove pixel calculation for top position
+                    // const viewportHeight = window.innerHeight;
+                    // const titleHeight = titleElement.offsetHeight;
+                    // const topPosition = (viewportHeight / 2) - (titleHeight / 2);
+
+                    // Apply styles using CSS transform for centering
+                    titleElement.style.position = 'absolute';
+                    titleElement.style.top = '50%'; // Position top edge at 50%
+                    titleElement.style.left = '50%'; 
+                    // Use transform to shift up/left by half of the element's size
+                    titleElement.style.transform = 'translate(-50%, -50%)'; 
+                    titleElement.style.width = '90%'; 
+                    titleElement.style.textAlign = 'center';
+                }
+            }, 100); // Keep the small delay for stability
+        };
+    </script>
+</body>
+</html> 

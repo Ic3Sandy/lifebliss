@@ -1,10 +1,170 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:lifebliss_app/presentation/pages/home_page.dart';
+import 'package:webview_flutter/webview_flutter.dart';
+import 'package:webview_flutter_platform_interface/webview_flutter_platform_interface.dart';
+import 'package:webview_flutter_platform_interface/src/types/types.dart' hide WebViewPlatform;
+
+// Mock implementation
+class MockWebViewPlatform extends WebViewPlatform {
+  @override
+  PlatformWebViewWidget createPlatformWebViewWidget(
+    PlatformWebViewWidgetCreationParams params,
+  ) {
+    return MockPlatformWebViewWidget(params);
+  }
+
+  @override
+  PlatformWebViewController createPlatformWebViewController(
+    PlatformWebViewControllerCreationParams params,
+  ) {
+    return MockPlatformWebViewController(params);
+  }
+
+  @override
+  PlatformNavigationDelegate createPlatformNavigationDelegate(
+      PlatformNavigationDelegateCreationParams params) {
+    return MockPlatformNavigationDelegate(params);
+  }
+}
+
+class MockPlatformWebViewWidget extends PlatformWebViewWidget {
+  MockPlatformWebViewWidget(super.params)
+      : super.implementation();
+
+  @override
+  Widget build(BuildContext context) {
+    // Return a simple placeholder for testing
+    return const SizedBox(
+      key: ValueKey('MockPlatformWebViewWidget'),
+      width: 100,
+      height: 100,
+    );
+  }
+}
+
+class MockPlatformWebViewController extends PlatformWebViewController {
+  MockPlatformWebViewController(super.params)
+      : super.implementation();
+
+  @override
+  Future<void> loadRequest(LoadRequestParams params) async {
+    // No-op for testing
+  }
+
+  @override
+  Future<void> setPlatformNavigationDelegate(PlatformNavigationDelegate handler) async { }
+
+  // Implement other methods as needed, likely with no-ops
+  @override
+  Future<void> setJavaScriptMode(JavaScriptMode mode) async { }
+
+  @override
+  Future<void> setBackgroundColor(Color color) async { }
+
+   @override
+  Future<void> loadHtmlString(String html, {String? baseUrl}) async { }
+
+   @override
+  Future<void> loadFile(String absoluteFilePath) async { }
+
+   @override
+  Future<String?> currentUrl() async => null;
+
+  @override
+  Future<bool> canGoBack() async => false;
+
+  @override
+  Future<bool> canGoForward() async => false;
+
+  @override
+  Future<void> goBack() async { }
+
+  @override
+  Future<void> goForward() async { }
+
+  @override
+  Future<void> reload() async { }
+
+  @override
+  Future<void> clearCache() async { }
+
+  @override
+  Future<void> clearLocalStorage() async { }
+
+  @override
+  Future<void> runJavaScript(String javaScript) async { }
+
+  @override
+  Future<Object> runJavaScriptReturningResult(String javaScript) async => Object();
+
+  @override
+  Future<void> addJavaScriptChannel(JavaScriptChannelParams javaScriptChannelParams) async { }
+
+  @override
+  Future<void> removeJavaScriptChannel(String javaScriptChannelName) async { }
+
+  @override
+  Future<String?> getTitle() async => null;
+
+  @override
+  Future<void> scrollTo(int x, int y) async { }
+
+  @override
+  Future<void> scrollBy(int x, int y) async { }
+
+  @override
+  Future<Offset> getScrollPosition() async => Offset.zero;
+
+  @override
+  Future<void> enableZoom(bool enabled) async { }
+
+  @override
+  Future<void> setMediaPlaybackRequiresUserGesture(bool require) async { }
+
+  @override
+  Future<void> setUserAgent(String? userAgent) async { }
+}
+
+class MockPlatformNavigationDelegate extends PlatformNavigationDelegate {
+  MockPlatformNavigationDelegate(super.params)
+      : super.implementation();
+
+  @override
+  Future<void> setOnPageStarted(PageEventCallback onPageStarted) async {}
+
+  @override
+  Future<void> setOnPageFinished(PageEventCallback onPageFinished) async {}
+
+  @override
+  Future<void> setOnProgress(ProgressCallback onProgress) async {}
+
+  @override
+  Future<void> setOnWebResourceError(WebResourceErrorCallback onWebResourceError) async {}
+
+  @override
+  Future<void> setOnNavigationRequest(NavigationRequestCallback onNavigationRequest) async {}
+
+  @override
+  Future<void> setOnUrlChange(UrlChangeCallback onUrlChange) async {}
+  
+  @override
+  Future<void> setOnHttpAuthRequest(HttpAuthRequestCallback onHttpAuthRequest) async {}
+  
+  @override
+  Future<void> setOnHttpError(HttpResponseErrorCallback onHttpError) async {}
+}
 
 void main() {
+  setUp(() {
+    // Set the mock platform implementation before each test
+    WebViewPlatform.instance = MockWebViewPlatform();
+  });
+
+  // TestWidgetsFlutterBinding.ensureInitialized(); // Keep this if needed elsewhere, but setUp handles the mock now
+
   group('HomePage', () {
-    testWidgets('should display app title', (WidgetTester tester) async {
+    testWidgets('should display a WebViewWidget', (WidgetTester tester) async {
       // Build the HomePage widget
       await tester.pumpWidget(
         const MaterialApp(
@@ -12,119 +172,10 @@ void main() {
         ),
       );
 
-      // Verify that the app title is displayed
-      expect(find.text('Lifebliss'), findsOneWidget);
-    });
-
-    testWidgets('should use responsive font size based on screen width - small screen', (WidgetTester tester) async {
-      // Set up a small screen size
-      tester.view.physicalSize = const Size(300, 600);
-      tester.view.devicePixelRatio = 1.0;
-
-      // Build the HomePage widget with small screen
-      await tester.pumpWidget(
-        const MaterialApp(
-          home: HomePage(),
-        ),
-      );
-
-      // Find the text widget
-      final textWidget = tester.widget<Text>(find.text('Lifebliss'));
-      
-      // Verify font size for small screen
-      expect((textWidget.style?.fontSize ?? 0) <= 40, isTrue);
-
-      // Reset the screen size to avoid affecting other tests
-      addTearDown(() => tester.view.resetPhysicalSize());
-    });
-
-    testWidgets('should use responsive font size based on screen width - large screen', (WidgetTester tester) async {
-      // Set up a large screen size
-      tester.view.physicalSize = const Size(1200, 800);
-      tester.view.devicePixelRatio = 1.0;
-
-      // Build the HomePage widget with large screen
-      await tester.pumpWidget(
-        const MaterialApp(
-          home: HomePage(),
-        ),
-      );
-
-      // Find the text widget
-      final textWidget = tester.widget<Text>(find.text('Lifebliss'));
-      
-      // Verify font size for large screen
-      expect((textWidget.style?.fontSize ?? 0) > 40, isTrue);
-
-      // Reset the screen size to avoid affecting other tests
-      addTearDown(() => tester.view.resetPhysicalSize());
-    });
-
-    testWidgets('should have gradient background', (WidgetTester tester) async {
-      // Build the HomePage widget
-      await tester.pumpWidget(
-        const MaterialApp(
-          home: HomePage(),
-        ),
-      );
-
-      // Find the container with the gradient using the key
-      final container = tester.widget<Container>(find.byKey(const Key('background_container')));
-      final decoration = container.decoration as BoxDecoration;
-      final gradient = decoration.gradient as LinearGradient;
-      
-      // Verify gradient properties
-      expect(gradient.colors.length, 2);
-      // The initial colors should be white and blue
-      expect(gradient.colors[0], Colors.white);
-      expect(gradient.colors[1], Colors.blue);
-      expect(gradient.begin, Alignment.topCenter);
-      expect(gradient.end, Alignment.bottomCenter);
-    });
-
-    testWidgets('should have text with shadow effect', (WidgetTester tester) async {
-      // Build the HomePage widget
-      await tester.pumpWidget(
-        const MaterialApp(
-          home: HomePage(),
-        ),
-      );
-
-      // Find the text widget
-      final textWidget = tester.widget<Text>(find.text('Lifebliss'));
-      
-      // Verify text style properties
-      expect(textWidget.style?.shadows?.isNotEmpty, isTrue);
-      expect(textWidget.style?.letterSpacing, 2.0);
-      expect(textWidget.style?.fontWeight, FontWeight.bold);
-    });
-
-    testWidgets('should change background color when title is tapped', (WidgetTester tester) async {
-      // Build the HomePage widget
-      await tester.pumpWidget(
-        const MaterialApp(
-          home: HomePage(),
-        ),
-      );
-
-      // Get the initial background colors
-      final initialContainer = tester.widget<Container>(find.byKey(const Key('background_container')));
-      final initialDecoration = initialContainer.decoration as BoxDecoration;
-      final initialGradient = initialDecoration.gradient as LinearGradient;
-      final initialColors = initialGradient.colors;
-
-      // Find and tap the title text
-      await tester.tap(find.text('Lifebliss'));
-      await tester.pump();
-
-      // Get the new background colors
-      final updatedContainer = tester.widget<Container>(find.byKey(const Key('background_container')));
-      final updatedDecoration = updatedContainer.decoration as BoxDecoration;
-      final updatedGradient = updatedDecoration.gradient as LinearGradient;
-      final updatedColors = updatedGradient.colors;
-
-      // Verify that the background colors have changed
-      expect(updatedColors, isNot(equals(initialColors)));
+      // Verify that a WebViewWidget is displayed
+      expect(find.byType(WebViewWidget), findsOneWidget);
+      // Optionally, verify the mock placeholder is rendered
+      // expect(find.byKey(const ValueKey('MockPlatformWebViewWidget')), findsOneWidget);
     });
   });
 }

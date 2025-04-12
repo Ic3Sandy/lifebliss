@@ -1,0 +1,55 @@
+* {
+    box-sizing: border-box; /* Apply border-box universally */
+}
+
+html, body {
+    height: 100%; /* Needed for JS height calculation */
+    margin: 0;
+    padding: 0; /* Remove padding */
+    position: relative; /* Ensure body is positioning context for absolute h1 */
+}
+
+/* Remove flex centering from html */
+/*
+html {
+    display: flex;
+    justify-content: center; 
+    align-items: center; 
+    text-align: center; 
+}
+*/
+
+body {
+    /* Basic styles */
+    width: 100%;
+    font-family: sans-serif;
+    background-color: #f0f0f0; /* Revert debug color */
+    color: #333;
+    font-size: 14px; 
+    line-height: 1.6; 
+    
+    /* Remove flex rules */
+    /* 
+    display: flex;
+    justify-content: center; 
+    align-items: center; 
+    */
+}
+
+h1 {
+    color: #007bff;
+    font-size: 2rem; 
+    margin: 0; 
+    padding: 10px; /* Add some padding to h1 */
+    /* Positioning is handled by JS */
+}
+
+/* Media Query for larger screens (tablets/desktops) */
+@media (min-width: 601px) { 
+    body {
+        font-size: 16px; 
+    }
+    h1 {
+        font-size: 2.5rem; 
+    }
+} 

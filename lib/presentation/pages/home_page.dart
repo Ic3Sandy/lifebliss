@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
-import 'dart:math';
+import 'package:webview_flutter/webview_flutter.dart';
+import 'package:flutter/services.dart'; // Required for loading assets
+import 'dart:convert'; // Required for encoding
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -9,99 +11,69 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  static const List<List<Color>> kColorPairs = [
-    [Colors.white, Colors.blue],
-    [Colors.pink, Colors.purple],
-    [Colors.amber, Colors.orange],
-    [Colors.lightGreen, Colors.teal],
-    [Colors.lightBlue, Colors.indigo],
-    [Colors.red, Colors.deepOrange],
-  ];
+  late final WebViewController _controller;
 
-  int _currentColorPairIndex = 0;
+  @override
+  void initState() {
+    super.initState();
 
-  final Random _random = Random();
+    _controller = WebViewController()
+      ..setJavaScriptMode(JavaScriptMode.unrestricted) // Enable JavaScript
+      ..setBackgroundColor(const Color(0x00000000)) // Optional: Make background transparent
+      ..setNavigationDelegate(
+        NavigationDelegate(
+          onProgress: (int progress) {
+            // Optional: Implement a loading indicator
+          },
+          onPageStarted: (String url) {},
+          onPageFinished: (String url) {},
+          onWebResourceError: (WebResourceError error) {
+            // Optional: Handle loading errors
+            debugPrint('''
+Page resource error:
+  code: ${error.errorCode}
+  description: ${error.description}
+  errorType: ${error.errorType}
+  isForMainFrame: ${error.isForMainFrame}
+          ''');
+          },
+          // Optional: Control navigation
+          // onNavigationRequest: (NavigationRequest request) {
+          //   if (request.url.startsWith('some_prefix_to_block')) {
+          //     return NavigationDecision.prevent;
+          //   }
+          //   return NavigationDecision.navigate;
+          // },
+        ),
+      );
 
-  void _changeBackgroundColor() {
-    if (kColorPairs.length <= 1) return;
-    
-    setState(() {
-      // Generate a new random index different from the current one
-      int newIndex;
-      do {
-        newIndex = _random.nextInt(kColorPairs.length);
-      } while (newIndex == _currentColorPairIndex);
-      
-      _currentColorPairIndex = newIndex;
-    });
+    _loadHtmlFromAssets(); // Load the local HTML content
+  }
+
+  Future<void> _loadHtmlFromAssets() async {
+    try {
+      final String fileText = await rootBundle.loadString('assets/index.html');
+      _controller.loadRequest(Uri.dataFromString(
+        fileText,
+        mimeType: 'text/html',
+        encoding: Encoding.getByName('utf-8'),
+      ));
+    } catch (e) {
+      debugPrint('Error loading HTML from assets: $e');
+      // Optionally load fallback content or show an error message
+      _controller.loadHtmlString('<html><body><h1>Error loading content</h1></body></html>');
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: _HomePageBody(
-        colorPairs: kColorPairs,
-        currentColorPairIndex: _currentColorPairIndex,
-        changeBackgroundColor: _changeBackgroundColor,
+      appBar: AppBar(
+        backgroundColor: Colors.blue,
       ),
-    );
-  }
-}
-
-class _HomePageBody extends StatelessWidget {
-  final List<List<Color>> colorPairs;
-  final int currentColorPairIndex;
-  final VoidCallback changeBackgroundColor;
-
-  const _HomePageBody({
-    required this.colorPairs,
-    required this.currentColorPairIndex,
-    required this.changeBackgroundColor,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final screenSize = MediaQuery.of(context).size;
-    
-    return Container(
-      key: const Key('background_container'),
-      width: double.infinity,
-      height: double.infinity,
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: colorPairs[currentColorPairIndex],
-        ),
+      body: Container(
+        child: WebViewWidget(controller: _controller),
       ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          GestureDetector(
-            onTap: changeBackgroundColor,
-            child: Text(
-              'Lifebliss',
-              style: _getTitleTextStyle(screenSize.width, context),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-  
-  TextStyle _getTitleTextStyle(double screenWidth, BuildContext context) {
-    return TextStyle(
-      color: Colors.blue.shade900,
-      fontSize: screenWidth < 600 ? 40 : 72,
-      fontWeight: FontWeight.bold,
-      letterSpacing: 2.0,
-      shadows: [
-        Shadow(
-          blurRadius: 10.0,
-          color: Colors.blue.withOpacity(0.5),
-          offset: const Offset(5.0, 5.0),
-        ),
-      ],
     );
   }
 }
