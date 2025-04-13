@@ -25,6 +25,9 @@ class _HomePageState extends State<HomePage> {
   late final ColorService _colorService;
   bool _webViewInitialized = false;
   Timer? _initTimer;
+  String? _htmlContent;
+  String? _cssContent;
+  String? _jsContent;
 
   @override
   void dispose() {
@@ -143,13 +146,38 @@ Page resource error:
     }
   }
 
+  // Load all required asset files
+  Future<void> _loadAssetFiles() async {
+    try {
+      _htmlContent = await rootBundle.loadString('assets/index.html');
+      _cssContent = await rootBundle.loadString('assets/styles.css');
+      _jsContent = await rootBundle.loadString('assets/index.js');
+      debugPrint('Loaded HTML content, length: ${_htmlContent?.length ?? 0}');
+      debugPrint('Loaded CSS content, length: ${_cssContent?.length ?? 0}');
+      debugPrint('Loaded JS content, length: ${_jsContent?.length ?? 0}');
+    } catch (e) {
+      debugPrint('Error loading asset files: $e');
+    }
+  }
+
   Future<void> _loadHtmlFromAssets() async {
     try {
-      final String fileText = await rootBundle.loadString('assets/index.html');
-      debugPrint('Loaded HTML from assets, length: ${fileText.length}');
+      // First load all asset files
+      await _loadAssetFiles();
+
+      if (_htmlContent == null) {
+        throw Exception('Failed to load HTML content');
+      }
+
+      // Create a modified HTML with inline CSS and JS to avoid loading issues
+      final String htmlWithInlineResources = _htmlContent!
+          .replaceFirst('<link rel="stylesheet" href="styles.css">', '<style>${_cssContent ?? ''}</style>')
+          .replaceFirst('<script src="index.js" defer></script>', '<script>${_jsContent ?? ''}</script>');
+
+      debugPrint('Created HTML with inline resources, length: ${htmlWithInlineResources.length}');
 
       await _controller.loadRequest(Uri.dataFromString(
-        fileText,
+        htmlWithInlineResources,
         mimeType: 'text/html',
         encoding: Encoding.getByName('utf-8'),
       ));
@@ -164,19 +192,18 @@ Page resource error:
             if (title) {
               console.log("Title element found: " + title.innerText);
               
-              // Add extra test click listener to verify DOM interaction
-              title.addEventListener('click', function(e) {
-                console.log("Direct click listener triggered");
-                document.body.style.backgroundColor = "#FF5733";
-                if (window.flutter) {
-                  try {
-                    window.flutter.postMessage("titleClicked");
-                  } catch(err) {
-                    console.error("Error sending click message:", err);
-                  }
-                }
-                e.preventDefault();
-              });
+              // Log actual position for debugging
+              const rect = title.getBoundingClientRect();
+              console.log("Title position: top=" + rect.top + ", left=" + rect.left);
+              
+              // Force element to center if needed
+              if (Math.abs(rect.top - window.innerHeight/2) > 50) {
+                console.log("Fixing title position via JS");
+                document.body.style.display = 'flex';
+                document.body.style.justifyContent = 'center';
+                document.body.style.alignItems = 'center';
+                document.body.style.minHeight = '100vh';
+              }
             } else {
               console.error("CRITICAL: app-title element not found in DOM");
             }
