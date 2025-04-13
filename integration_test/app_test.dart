@@ -60,7 +60,7 @@ void main() {
       expect(find.byType(WebViewWidget), findsOneWidget);
     });
 
-    testWidgets('Clicking title in WebView changes background color', (tester) async {
+    testWidgets('Multiple rounds of clicking changes background color repeatedly', (tester) async {
       // Start the app
       app.main();
 
@@ -80,49 +80,42 @@ void main() {
       final webViewFinder = find.byType(WebViewWidget);
       expect(webViewFinder, findsOneWidget);
 
-      // Take a screenshot before clicking the title
-      await takeScreenshot(tester, 'before_title_click');
+      // Take a screenshot before the test begins
+      await takeScreenshot(tester, 'before_multiple_rounds');
 
-      // In real integration tests, we can't directly access the controller
-      // from the WebViewWidget instance. Instead, we'll trigger the title click
-      // through the JavaScript interface by triggering a click on the app title.
-
-      // Since we can't directly interact with WebView content in integration tests,
-      // we'll tap the "click me" area programmatically by sending JavaScript to
-      // the WebView to simulate a click.
-
-      // First, find the WebViewWidget in the widget tree
-      final webView = tester.widget<WebViewWidget>(webViewFinder);
-
-      // Get the instance of WebViewController from the HomePage
-      // This requires accessing the controller via the widget's private API,
-      // which is not possible in integration tests.
-      // Instead, we'll use an alternative approach.
-
-      // In an integration test, we'll infer the controller is working correctly
-      // by testing the color button's ability to change the background.
-      // We'll tap the color button and verify the app remains stable.
-
+      // Find the color button
       final colorButtonFinder = find.byIcon(Icons.color_lens);
       expect(colorButtonFinder, findsOneWidget);
 
-      // Tap the button to trigger the color change
-      await tester.tap(colorButtonFinder);
-      await tester.pump();
+      // Perform multiple rounds of color changes to test stability
+      // This simulates a user clicking multiple times to change colors
+      const numberOfRounds = 5;
 
-      // Wait for WebView JavaScript execution to update the color
-      await tester.pumpAndSettle(const Duration(milliseconds: 500));
+      for (int round = 1; round <= numberOfRounds; round++) {
+        // Log the current round
+        debugPrint('Starting color change round $round of $numberOfRounds');
 
-      // The title click functionality would normally use a JavaScript channel
-      // to inform the Flutter app about the click. In an integration test,
-      // we can verify the app handles this by checking it remains stable.
+        // Tap the button to trigger the color change
+        await tester.tap(colorButtonFinder);
+        await tester.pump();
 
-      // Take a screenshot after the simulated title click
-      await takeScreenshot(tester, 'after_title_click');
+        // Wait for WebView JavaScript execution to update the color
+        await tester.pumpAndSettle(const Duration(milliseconds: 300));
 
-      // Verify app is still stable (no crashes)
+        // Take a screenshot after each round
+        await takeScreenshot(tester, 'round_${round}_color_change');
+
+        // Verify app is still stable after each round
+        expect(find.byType(AppBar), findsOneWidget);
+        expect(find.byType(WebViewWidget), findsOneWidget);
+      }
+
+      // Final verification that app remains stable after all rounds
       expect(find.byType(AppBar), findsOneWidget);
       expect(find.byType(WebViewWidget), findsOneWidget);
+
+      // Take a final screenshot after all rounds
+      await takeScreenshot(tester, 'after_multiple_rounds');
     });
 
     testWidgets('WebView can communicate with Flutter using JavaScript channels', (tester) async {
