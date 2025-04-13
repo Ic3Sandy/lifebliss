@@ -10,27 +10,33 @@ void main() {
 
   group('HomePage', () {
     group('UI tests', () {
-      testWidgets('should display a WebViewWidget', (WidgetTester tester) async {
-        // Arrange & Act - Build the HomePage widget
-        await tester.pumpWidget(testableWidget(const HomePage()));
+      testWidgets(
+        'should display a WebViewWidget',
+        (WidgetTester tester) async {
+          // Arrange & Act - Build the HomePage widget
+          await tester.pumpWidget(testableWidget(const HomePage()));
 
-        // Assert - Verify WebView is displayed
-        expect(find.byType(WebViewWidget), findsOneWidget);
-        expect(
-          find.byKey(const ValueKey('MockPlatformWebViewWidget')),
-          findsOneWidget,
-        );
-      });
+          // Assert - Verify WebView is displayed
+          expect(find.byType(WebViewWidget), findsOneWidget);
+          expect(
+            find.byKey(const ValueKey('MockPlatformWebViewWidget')),
+            findsOneWidget,
+          );
+        },
+      );
 
-      testWidgets('should have AppBar with blue background', (WidgetTester tester) async {
-        // Arrange & Act - Build the HomePage widget
-        await tester.pumpWidget(testableWidget(const HomePage()));
+      testWidgets(
+        'should have AppBar with blue background',
+        (WidgetTester tester) async {
+          // Arrange & Act - Build the HomePage widget
+          await tester.pumpWidget(testableWidget(const HomePage()));
 
-        // Assert - Verify AppBar with correct color
-        expect(find.byType(AppBar), findsOneWidget);
-        final AppBar appBar = tester.widget<AppBar>(find.byType(AppBar));
-        expect(appBar.backgroundColor, Colors.blue);
-      });
+          // Assert - Verify AppBar with correct color
+          expect(find.byType(AppBar), findsOneWidget);
+          final AppBar appBar = tester.widget<AppBar>(find.byType(AppBar));
+          expect(appBar.backgroundColor, Colors.blue);
+        },
+      );
     });
 
     group('Logic tests', () {

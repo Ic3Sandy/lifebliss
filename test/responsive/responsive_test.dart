@@ -8,7 +8,11 @@ void main() {
 
   group('Responsive Layout Tests', () {
     /// Helper function to verify LoadingPage elements are displayed correctly
-    Future<void> verifyLoadingPageElements(WidgetTester tester, Size deviceSize, String sizeName) async {
+    Future<void> verifyLoadingPageElements(
+      WidgetTester tester,
+      Size deviceSize,
+      String sizeName,
+    ) async {
       // Arrange - Build widget with given size
       await tester.pumpWidget(
         responsiveTestableWidget(
@@ -37,9 +41,12 @@ void main() {
 
     // Test on multiple device sizes
     deviceSizes.forEach((name, size) {
-      testWidgets('LoadingPage renders correctly on $name', (WidgetTester tester) async {
-        await verifyLoadingPageElements(tester, size, name);
-      });
+      testWidgets(
+        'LoadingPage renders correctly on $name',
+        (WidgetTester tester) async {
+          await verifyLoadingPageElements(tester, size, name);
+        },
+      );
     });
   });
 }

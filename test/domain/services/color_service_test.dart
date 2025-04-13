@@ -21,19 +21,26 @@ void main() {
         expect(color, isA<Color>());
       });
 
-      test('getRandomColor should return different colors on subsequent calls', () {
-        // Arrange
-        const int iterations = 10;
-        final Set<Color> colors = {};
+      test(
+        'getRandomColor should return different colors on subsequent calls',
+        () {
+          // Arrange
+          const int iterations = 10;
+          final Set<Color> colors = {};
 
-        // Act - collect multiple color samples
-        for (int i = 0; i < iterations; i++) {
-          colors.add(colorService.getRandomColor());
-        }
+          // Act - collect multiple color samples
+          for (int i = 0; i < iterations; i++) {
+            colors.add(colorService.getRandomColor());
+          }
 
-        // Assert - If we get at least 2 different colors in 10 tries
-        expect(colors.length, greaterThan(1), reason: 'Random color generator should produce different colors');
-      });
+          // Assert - If we get at least 2 different colors in 10 tries
+          expect(
+            colors.length,
+            greaterThan(1),
+            reason: 'Random color generator should produce different colors',
+          );
+        },
+      );
 
       test('getRandomColorHex should return a valid hex color string', () {
         // Act
@@ -43,17 +50,20 @@ void main() {
         expect(hexColor, matches(r'^#[0-9A-Fa-f]{6}$'));
       });
 
-      test('getRandomColorHex should create string from getRandomColor result', () {
-        // Arrange - Create a predictable color
-        const controlColor = Color(0xFF123456);
-        final mockColorService = TestColorService(controlColor);
+      test(
+        'getRandomColorHex should create string from getRandomColor result',
+        () {
+          // Arrange - Create a predictable color
+          const controlColor = Color(0xFF123456);
+          final mockColorService = TestColorService(controlColor);
 
-        // Act
-        final hexColor = mockColorService.getRandomColorHex();
+          // Act
+          final hexColor = mockColorService.getRandomColorHex();
 
-        // Assert
-        expect(hexColor, '#123456');
-      });
+          // Assert
+          expect(hexColor, '#123456');
+        },
+      );
     });
 
     group('WebView integration', () {
@@ -69,34 +79,41 @@ void main() {
         mockController = MockWebViewPlatform.lastCreatedController as MockPlatformWebViewController;
       });
 
-      test('setRandomBackgroundColor should execute JavaScript with a color', () async {
-        // Act
-        await colorService.setRandomBackgroundColor(controller);
+      test(
+        'setRandomBackgroundColor should execute JavaScript with a color',
+        () async {
+          // Act
+          await colorService.setRandomBackgroundColor(controller);
 
-        // Assert
-        expect(mockController.executedJavaScripts, isNotEmpty);
-        expect(
-          mockController.executedJavaScripts.last,
-          contains('document.body.style.backgroundColor = "#'),
-          reason: 'JavaScript should update background color with a hex value',
-        );
-      });
+          // Assert
+          expect(mockController.executedJavaScripts, isNotEmpty);
+          expect(
+            mockController.executedJavaScripts.last,
+            contains('document.body.style.backgroundColor = "#'),
+            reason: 'JavaScript should update background color with a hex value',
+          );
+        },
+      );
 
-      test('executed JavaScript should use the hex value from getRandomColorHex', () async {
-        // Arrange - Create a predictable color hex
-        const testHexColor = '#abcdef';
-        final mockColorService = TestColorServiceWithHex(testHexColor);
+      test(
+        'executed JavaScript should use the hex value from getRandomColorHex',
+        () async {
+          // Arrange - Create a predictable color hex
+          const testHexColor = '#abcdef';
+          final mockColorService = TestColorServiceWithHex(testHexColor);
 
-        // Act
-        await mockColorService.setRandomBackgroundColor(controller);
+          // Act
+          await mockColorService.setRandomBackgroundColor(controller);
 
-        // Assert
-        expect(
-          mockController.executedJavaScripts.last,
-          'document.body.style.backgroundColor = "$testHexColor";',
-          reason: 'Should use exactly the hex color from getRandomColorHex',
-        );
-      });
+          // Assert
+          const expectedJs = 'document.body.style.backgroundColor = "#abcdef";';
+          expect(
+            mockController.executedJavaScripts.last,
+            expectedJs,
+            reason: 'Should use exactly the hex color from getRandomColorHex',
+          );
+        },
+      );
     });
   });
 }

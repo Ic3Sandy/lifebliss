@@ -11,7 +11,11 @@ Widget testableWidget(Widget child) {
 }
 
 /// Wraps a widget in a MaterialApp with specific dimensions for responsive testing
-Widget responsiveTestableWidget(Widget child, {required double width, required double height}) {
+Widget responsiveTestableWidget(
+  Widget child, {
+  required double width,
+  required double height,
+}) {
   return MaterialApp(
     home: MediaQuery(
       data: MediaQueryData(size: Size(width, height)),

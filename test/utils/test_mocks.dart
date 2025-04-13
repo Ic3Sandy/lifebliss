@@ -152,7 +152,6 @@ class MockPlatformWebViewController extends PlatformWebViewController {
   Future<Offset> getScrollPosition() async => Offset.zero;
   @override
   Future<void> enableZoom(bool enabled) async {}
-  @override
   Future<void> setMediaPlaybackRequiresUserGesture(bool require) async {}
   @override
   Future<void> setUserAgent(String? userAgent) async {}
