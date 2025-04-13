@@ -5,7 +5,7 @@ class MockColorService extends ColorService {
   bool getRandomColorHexCalled = false;
 
   @override
-  String getRandomColorHex() {
+  String getRandomColorHex({int maxAttempts = 3}) {
     getRandomColorHexCalled = true;
     return '#FF0000'; // Always return red for testing
   }

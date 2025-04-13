@@ -5,22 +5,42 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="styles.css">
     <script>
-        // Function to call Flutter
+        // Function to call Flutter with improved error handling
         function callFlutter(message) {
             console.log("Attempting to call Flutter with: " + message);
             try {
+                // Check if Flutter channel exists with proper error handling
                 if (window.flutter && typeof window.flutter.postMessage === 'function') {
                     window.flutter.postMessage(message);
-                    console.log("Message sent to Flutter");
+                    console.log("Message sent to Flutter successfully");
                     return true;
                 } else {
-                    console.log("Flutter channel not available or not a function");
+                    if (!window.flutter) {
+                        console.error("Flutter channel not available - window.flutter is undefined");
+                    } else {
+                        console.error("Flutter channel exists but postMessage is not a function");
+                        console.error("Type of postMessage: " + typeof window.flutter.postMessage);
+                    }
+                    // Fall back to direct DOM manipulation
+                    if (message === 'titleClicked') {
+                        document.body.style.backgroundColor = "#FF8800";
+                    }
                     return false;
                 }
             } catch (e) {
-                console.log("Error calling Flutter: " + e);
+                console.error("Error calling Flutter: " + e);
                 return false;
             }
+        }
+
+        // Function to verify Flutter channel is ready
+        function checkFlutterChannel() {
+            if (window.flutter && typeof window.flutter.postMessage === 'function') {
+                console.log("Flutter channel is ready and functional");
+                return true;
+            }
+            console.warn("Flutter channel not ready yet");
+            return false;
         }
     </script>
 </head>
@@ -29,37 +49,66 @@
     <!-- <p>This content is rendered via WebView.</p> -->
 
     <script>
-        window.onload = function() {
-            setTimeout(() => {
-                console.log("Setting up title element");
-                const titleElement = document.getElementById('app-title');
-                if (titleElement) {
-                    // Apply styles using CSS transform for centering
-                    titleElement.style.position = 'absolute';
-                    titleElement.style.top = '50%'; // Position top edge at 50%
-                    titleElement.style.left = '50%'; 
-                    // Use transform to shift up/left by half of the element's size
-                    titleElement.style.transform = 'translate(-50%, -50%)'; 
-                    titleElement.style.width = '90%'; 
-                    titleElement.style.textAlign = 'center';
+        // Function to set up the title element with click listeners
+        function setupTitleElement() {
+            console.log("Setting up title element");
+            const titleElement = document.getElementById('app-title');
+            if (titleElement) {
+                // Apply styles using CSS transform for centering
+                titleElement.style.position = 'absolute';
+                titleElement.style.top = '50%';
+                titleElement.style.left = '50%';
+                titleElement.style.transform = 'translate(-50%, -50%)';
+                titleElement.style.width = '90%';
+                titleElement.style.textAlign = 'center';
+                
+                // Add cursor style to indicate it's clickable
+                titleElement.style.cursor = 'pointer';
+                
+                // Add single click event handler with better error handling
+                titleElement.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    console.log("Title clicked - requesting random color");
                     
-                    // Add cursor style to indicate it's clickable
-                    titleElement.style.cursor = 'pointer';
+                    // First change color locally as fallback
+                    document.body.style.backgroundColor = "#FF8800";
                     
-                    // Add click event listener that calls Flutter for random color
-                    titleElement.addEventListener('click', function() {
-                        console.log("Title clicked - requesting random color from Flutter");
-                        
-                        // Notify Flutter to generate a random color
+                    // Then try to notify Flutter
+                    setTimeout(function() {
                         callFlutter("titleClicked");
-                    });
+                    }, 0); // Use timeout to avoid blocking the UI
+                });
 
-                    console.log("Click handler attached successfully");
-                } else {
-                    console.error("Could not find app-title element");
-                }
-            }, 100); // Keep the small delay for stability
-        };
+                console.log("Click handlers attached successfully");
+            } else {
+                console.error("Could not find app-title element");
+            }
+        }
+
+        // Set up event listeners when the DOM is fully loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log("DOM content loaded - setting up title element");
+            setupTitleElement();
+            
+            // Check Flutter channel after a delay
+            setTimeout(function() {
+                checkFlutterChannel();
+            }, 500);
+        });
+        
+        // Fallback for window load event
+        window.addEventListener('load', function() {
+            console.log("Window loaded - checking if title setup is needed");
+            const titleElement = document.getElementById('app-title');
+            if (titleElement && titleElement.style.cursor !== 'pointer') {
+                console.log("Title not set up yet - setting up now");
+                setupTitleElement();
+            }
+            
+            // Check Flutter channel again
+            checkFlutterChannel();
+        });
     </script>
 </body>
 </html> 

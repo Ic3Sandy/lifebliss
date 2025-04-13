@@ -1,55 +1,61 @@
 * {
-    box-sizing: border-box; /* Apply border-box universally */
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
 }
 
 html, body {
-    height: 100%; /* Needed for JS height calculation */
-    margin: 0;
-    padding: 0; /* Remove padding */
-    position: relative; /* Ensure body is positioning context for absolute h1 */
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
+    position: relative;
 }
-
-/* Remove flex centering from html */
-/*
-html {
-    display: flex;
-    justify-content: center; 
-    align-items: center; 
-    text-align: center; 
-}
-*/
 
 body {
-    /* Basic styles */
-    width: 100%;
-    font-family: sans-serif;
-    background-color: #f0f0f0; /* Revert debug color */
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    background-color: #f0f0f0;
     color: #333;
-    font-size: 14px; 
-    line-height: 1.6; 
-    
-    /* Remove flex rules */
-    /* 
-    display: flex;
-    justify-content: center; 
-    align-items: center; 
-    */
+    font-size: 16px;
+    line-height: 1.6;
 }
 
 h1 {
     color: #007bff;
-    font-size: 2rem; 
-    margin: 0; 
-    padding: 10px; /* Add some padding to h1 */
-    /* Positioning is handled by JS */
+    font-size: 2rem;
+    padding: 10px;
+    text-align: center;
+    /* Positioning is handled by JS for better reliability */
 }
 
-/* Media Query for larger screens (tablets/desktops) */
-@media (min-width: 601px) { 
+/* Make the title stand out more */
+#app-title {
+    font-weight: 600;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    transition: color 0.3s ease;
+}
+
+/* Button styles (if needed) */
+button {
+    background: #007bff;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 1rem;
+}
+
+button:hover {
+    background: #0056b3;
+}
+
+/* Media Query for larger screens */
+@media (min-width: 601px) {
     body {
-        font-size: 16px; 
+        font-size: 18px;
     }
+    
     h1 {
-        font-size: 2.5rem; 
+        font-size: 2.5rem;
     }
 } 
