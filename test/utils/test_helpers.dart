@@ -10,7 +10,7 @@ Widget testableWidget(Widget child) {
   );
 }
 
-/// Wraps a widget in a MaterialApp with specific dimensions for responsive testing
+/// Wraps a widget with specific dimensions for responsive testing
 Widget responsiveTestableWidget(
   Widget child, {
   required double width,
@@ -18,7 +18,9 @@ Widget responsiveTestableWidget(
 }) {
   return MaterialApp(
     home: MediaQuery(
-      data: MediaQueryData(size: Size(width, height)),
+      data: MediaQueryData(
+        size: Size(width, height),
+      ),
       child: child,
     ),
   );
@@ -36,7 +38,8 @@ class DeviceSizes {
 /// Asserts that a timer-based navigation happens within the expected timeframe
 ///
 /// This helper handles both the assertion before the expected navigation time
-/// (that the original widget is still present) and after (that the navigation occurred)
+/// (that the original widget is still present) and after (that the navigation
+/// occurred)
 Future<void> assertTimedNavigation<T, U>({
   required WidgetTester tester,
   required Widget originalWidget,

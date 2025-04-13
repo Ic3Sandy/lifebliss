@@ -12,7 +12,9 @@ void setupIntegrationTests() {
   setupMockWebViewPlatform();
 
   // Add mock for asset loading
-  TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMessageHandler(
+  final testBinding = TestDefaultBinaryMessengerBinding.instance;
+  final messenger = testBinding.defaultBinaryMessenger;
+  messenger.setMockMessageHandler(
     'flutter/assets',
     (ByteData? message) async {
       // Return mock HTML content
@@ -58,7 +60,9 @@ void main() {
       'Error handling - app should gracefully handle asset loading errors',
       (WidgetTester tester) async {
         // Override asset loading to return null (error)
-        TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMessageHandler(
+        final testBinding = TestDefaultBinaryMessengerBinding.instance;
+        final messenger = testBinding.defaultBinaryMessenger;
+        messenger.setMockMessageHandler(
           'flutter/assets',
           (ByteData? message) async {
             return null; // Simulate asset loading error

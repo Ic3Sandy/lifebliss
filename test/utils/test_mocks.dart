@@ -33,7 +33,9 @@ class MockWebViewPlatform extends WebViewPlatform {
   }
 
   @override
-  PlatformNavigationDelegate createPlatformNavigationDelegate(PlatformNavigationDelegateCreationParams params) {
+  PlatformNavigationDelegate createPlatformNavigationDelegate(
+    PlatformNavigationDelegateCreationParams params,
+  ) {
     return MockPlatformNavigationDelegate(params);
   }
 }
@@ -71,7 +73,9 @@ class MockPlatformWebViewController extends PlatformWebViewController {
   @override
   Future<void> loadRequest(LoadRequestParams params) async {
     if (params.uri.scheme == 'data') {
-      lastLoadedHtml = Uri.decodeComponent(params.uri.toString().split(',')[1]);
+      lastLoadedHtml = Uri.decodeComponent(
+        params.uri.toString().split(',')[1],
+      );
     } else {
       lastLoadedUrl = params.uri.toString();
     }
@@ -93,7 +97,7 @@ class MockPlatformWebViewController extends PlatformWebViewController {
     lastExecutedJavaScript = javaScript;
     executedJavaScripts.add(javaScript);
 
-    // Simple mock implementation to return a boolean for document.getElementById check
+    // Simple mock implementation to return a boolean for getElementById check
     if (javaScript.contains('document.getElementById')) {
       return true;
     }
@@ -102,18 +106,24 @@ class MockPlatformWebViewController extends PlatformWebViewController {
   }
 
   @override
-  Future<void> addJavaScriptChannel(JavaScriptChannelParams javaScriptChannelParams) async {
+  Future<void> addJavaScriptChannel(
+    JavaScriptChannelParams javaScriptChannelParams,
+  ) async {
     addedJavaScriptChannels.add(javaScriptChannelParams);
   }
 
   @override
-  Future<void> setPlatformNavigationDelegate(PlatformNavigationDelegate handler) async {
+  Future<void> setPlatformNavigationDelegate(
+    PlatformNavigationDelegate handler,
+  ) async {
     navigationDelegate = handler;
   }
 
   @override
   Future<void> removeJavaScriptChannel(String javaScriptChannelName) async {
-    addedJavaScriptChannels.removeWhere((channel) => channel.name == javaScriptChannelName);
+    addedJavaScriptChannels.removeWhere(
+      (channel) => channel.name == javaScriptChannelName,
+    );
   }
 
   //----------------------------------------------------------------------------
@@ -171,17 +181,25 @@ class MockPlatformNavigationDelegate extends PlatformNavigationDelegate {
   Future<void> setOnProgress(ProgressCallback onProgress) async {}
 
   @override
-  Future<void> setOnWebResourceError(WebResourceErrorCallback onWebResourceError) async {}
+  Future<void> setOnWebResourceError(
+    WebResourceErrorCallback onWebResourceError,
+  ) async {}
 
   @override
-  Future<void> setOnNavigationRequest(NavigationRequestCallback onNavigationRequest) async {}
+  Future<void> setOnNavigationRequest(
+    NavigationRequestCallback onNavigationRequest,
+  ) async {}
 
   @override
   Future<void> setOnUrlChange(UrlChangeCallback onUrlChange) async {}
 
   @override
-  Future<void> setOnHttpAuthRequest(HttpAuthRequestCallback onHttpAuthRequest) async {}
+  Future<void> setOnHttpAuthRequest(
+    HttpAuthRequestCallback onHttpAuthRequest,
+  ) async {}
 
   @override
-  Future<void> setOnHttpError(HttpResponseErrorCallback onHttpError) async {}
+  Future<void> setOnHttpError(
+    HttpResponseErrorCallback onHttpError,
+  ) async {}
 }

@@ -76,7 +76,8 @@ void main() {
         WebViewPlatform.instance = mockPlatform;
 
         controller = WebViewController();
-        mockController = MockWebViewPlatform.lastCreatedController as MockPlatformWebViewController;
+        final platformController = MockWebViewPlatform.lastCreatedController;
+        mockController = platformController as MockPlatformWebViewController;
       });
 
       test(
@@ -90,7 +91,7 @@ void main() {
           expect(
             mockController.executedJavaScripts.last,
             contains('document.body.style.backgroundColor = "#'),
-            reason: 'JavaScript should update background color with a hex value',
+            reason: 'JS should update background color with hex value',
           );
         },
       );
