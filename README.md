@@ -79,4 +79,42 @@ To run the tests:
 flutter test
 ```
 
+### Code Coverage
+
+The project includes test coverage tooling to help maintain high quality code. To run tests with coverage and generate a report:
+
+```bash
+# Using the convenience script
+./run_coverage.sh
+
+# Or manually
+flutter test --coverage
+genhtml coverage/lcov.info -o coverage/html
+```
+
+This will:
+1. Run all tests with coverage tracking
+2. Generate an HTML report in the `coverage/html` directory
+3. Open the report in your default browser
+
+The coverage report helps identify areas of code that need better test coverage.
+
+### Test Structure
+
+The project has a comprehensive test structure:
+
+```
+test/
+├── domain/          # Tests for business logic
+│   └── services/    # Tests for services like ColorService
+├── integration/     # End-to-end integration tests
+├── mocks/           # Mock implementations for testing
+├── presentation/    # UI component tests
+│   └── pages/       # Tests for screen pages
+├── utils/           # Test utilities and helpers
+└── widget_test.dart # Main widget tests
+```
+
+For metrics and current test coverage status, see `test/metrics.md`.
+
 ## Contributing

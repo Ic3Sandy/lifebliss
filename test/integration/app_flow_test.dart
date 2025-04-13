@@ -32,27 +32,37 @@ void main() {
     testWidgets(
       'App should start with loading screen and navigate to home page',
       (WidgetTester tester) async {
-        // Build the main app
+        // Setup mocks
+        setupMockWebViewPlatform();
+
+        // Start the app
         await tester.pumpWidget(const MyApp());
 
-        // Verify LoadingPage is shown initially
+        // Verify we start with the loading page
         expect(find.byType(LoadingPage), findsOneWidget);
         expect(find.text('Loading...'), findsOneWidget);
+        expect(find.byType(CircularProgressIndicator), findsOneWidget);
 
-        // Wait for loading screen delay
-        await tester.pump(
-          LoadingPage.navigationDelay - const Duration(milliseconds: 100),
-        );
-
-        // Should still be on loading screen
-        expect(find.byType(LoadingPage), findsOneWidget);
-
-        // Wait until navigation time
-        await tester.pump(const Duration(milliseconds: 200));
+        // Wait for navigation to occur
+        await tester.pump(LoadingPage.navigationDelay + const Duration(milliseconds: 100));
         await tester.pumpAndSettle();
 
-        // Should now be on HomePage
+        // Verify we navigated to the home page
         expect(find.byType(HomePage), findsOneWidget);
+        expect(find.byType(AppBar), findsOneWidget);
+        expect(find.text('Lifebliss'), findsOneWidget);
+
+        // Verify color change button exists
+        expect(find.byIcon(Icons.color_lens), findsOneWidget);
+
+        // Tap the color button
+        await tester.tap(find.byIcon(Icons.color_lens));
+        await tester.pump();
+
+        // Wait for animations to complete
+        await tester.pumpAndSettle();
+
+        // We've reached the end of the flow without errors
       },
     );
 

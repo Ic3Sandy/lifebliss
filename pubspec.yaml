@@ -52,6 +52,12 @@ dev_dependencies:
   
   # Code metrics for Dart and Flutter
   dart_code_metrics: ^5.7.6
+  
+  # Mock library for creating test doubles
+  mockito: ^5.4.4
+  
+  # For generating mock classes
+  build_runner: ^2.4.8
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
