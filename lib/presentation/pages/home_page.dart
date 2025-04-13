@@ -132,10 +132,14 @@ Page resource error:
       debugPrint('Generated random color in Flutter: $hexColor');
 
       // Apply the color to the webpage background using proper JavaScript syntax
-      await _safeRunJavaScript('document.body.style.backgroundColor = "$hexColor";');
+      await _safeRunJavaScript(
+        'document.body.style.backgroundColor = "$hexColor";',
+      );
 
       // Also change the title color for better visibility
-      await _safeRunJavaScript('document.getElementById("app-title").style.color = "#FFFFFF";');
+      await _safeRunJavaScript(
+        'document.getElementById("app-title").style.color = "#FFFFFF";',
+      );
 
       // Force a repaint
       await _safeRunJavaScript('document.body.offsetHeight;');
@@ -155,7 +159,7 @@ Page resource error:
       debugPrint('Loaded HTML content, length: ${_htmlContent?.length ?? 0}');
       debugPrint('Loaded CSS content, length: ${_cssContent?.length ?? 0}');
       debugPrint('Loaded JS content, length: ${_jsContent?.length ?? 0}');
-    } catch (e) {
+    } on Exception catch (e) {
       debugPrint('Error loading asset files: $e');
     }
   }
@@ -171,10 +175,19 @@ Page resource error:
 
       // Create a modified HTML with inline CSS and JS to avoid loading issues
       final String htmlWithInlineResources = _htmlContent!
-          .replaceFirst('<link rel="stylesheet" href="styles.css">', '<style>${_cssContent ?? ''}</style>')
-          .replaceFirst('<script src="index.js" defer></script>', '<script>${_jsContent ?? ''}</script>');
+          .replaceFirst(
+            '<link rel="stylesheet" href="styles.css">',
+            '<style>${_cssContent ?? ''}</style>',
+          )
+          .replaceFirst(
+            '<script src="index.js" defer></script>',
+            '<script>${_jsContent ?? ''}</script>',
+          );
 
-      debugPrint('Created HTML with inline resources, length: ${htmlWithInlineResources.length}');
+      debugPrint(
+        'Created HTML with inline resources, '
+        'length: ${htmlWithInlineResources.length}',
+      );
 
       await _controller.loadRequest(Uri.dataFromString(
         htmlWithInlineResources,
@@ -190,11 +203,11 @@ Page resource error:
             console.log("WebView loaded - testing DOM access");
             const title = document.getElementById('app-title');
             if (title) {
-              console.log("Title element found: " + title.innerText);
+              console.log(`Title element found: \${title.innerText}`);
               
               // Log actual position for debugging
               const rect = title.getBoundingClientRect();
-              console.log("Title position: top=" + rect.top + ", left=" + rect.left);
+              console.log(`Title position: top=\${rect.top}, left=\${rect.left}`);
               
               // Force element to center if needed
               if (Math.abs(rect.top - window.innerHeight/2) > 50) {
@@ -214,8 +227,9 @@ Page resource error:
       debugPrint('Error loading HTML from assets: $e');
       // Provide a simpler fallback with minimal content
       await _controller.loadHtmlString(
-        '<html><body style="display:flex;justify-content:center;align-items:center;'
-        'height:100vh;"><h1>Error loading content</h1></body></html>',
+        '<html><body style="display:flex;justify-content:center;'
+        'align-items:center;height:100vh;"><h1>Error loading content</h1>'
+        '</body></html>',
       );
     }
   }

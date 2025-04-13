@@ -68,7 +68,11 @@ class MockColorService extends ColorService {
 
   /// Set mock return values
   void setMockReturns({Color? color, String? hex}) {
-    if (color != null) mockReturnColor = color;
-    if (hex != null) mockReturnHex = hex;
+    if (color != null) {
+      mockReturnColor = color;
+    }
+    if (hex != null) {
+      mockReturnHex = hex;
+    }
   }
 }
