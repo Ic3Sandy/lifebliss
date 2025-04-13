@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:webview_flutter/webview_flutter.dart';
 import 'package:webview_flutter_platform_interface/webview_flutter_platform_interface.dart';
-import 'package:webview_flutter_platform_interface/src/types/types.dart' hide WebViewPlatform;
 
 /// Sets up the mock WebView platform for testing
 void setupMockWebViewPlatform() {

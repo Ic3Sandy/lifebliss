@@ -4,9 +4,7 @@ import 'package:lifebliss_app/presentation/pages/loading_page.dart';
 import '../utils/test_helpers.dart';
 
 void main() {
-  setUp(() {
-    setupMockWebViewPlatform();
-  });
+  setUp(setupMockWebViewPlatform);
 
   group('Responsive Layout Tests', () {
     /// Helper function to verify LoadingPage elements are displayed correctly

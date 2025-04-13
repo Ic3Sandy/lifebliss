@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:lifebliss_app/domain/services/color_service.dart';
 import 'package:webview_flutter/webview_flutter.dart';
-import 'package:webview_flutter_platform_interface/webview_flutter_platform_interface.dart';
 import '../../utils/test_mocks.dart';
 
 void main() {
@@ -32,7 +31,7 @@ void main() {
           colors.add(colorService.getRandomColor());
         }
 
-        // Assert - If we get at least 2 different colors in 10 tries, it's random enough
+        // Assert - If we get at least 2 different colors in 10 tries
         expect(colors.length, greaterThan(1), reason: 'Random color generator should produce different colors');
       });
 
@@ -46,7 +45,7 @@ void main() {
 
       test('getRandomColorHex should create string from getRandomColor result', () {
         // Arrange - Create a predictable color
-        final controlColor = const Color(0xFF123456);
+        const controlColor = Color(0xFF123456);
         final mockColorService = TestColorService(controlColor);
 
         // Act
@@ -76,21 +75,27 @@ void main() {
 
         // Assert
         expect(mockController.executedJavaScripts, isNotEmpty);
-        expect(mockController.executedJavaScripts.last, contains('document.body.style.backgroundColor = "#'),
-            reason: 'JavaScript should update background color with a hex value');
+        expect(
+          mockController.executedJavaScripts.last,
+          contains('document.body.style.backgroundColor = "#'),
+          reason: 'JavaScript should update background color with a hex value',
+        );
       });
 
       test('executed JavaScript should use the hex value from getRandomColorHex', () async {
         // Arrange - Create a predictable color hex
-        final testHexColor = '#abcdef';
+        const testHexColor = '#abcdef';
         final mockColorService = TestColorServiceWithHex(testHexColor);
 
         // Act
         await mockColorService.setRandomBackgroundColor(controller);
 
         // Assert
-        expect(mockController.executedJavaScripts.last, 'document.body.style.backgroundColor = "$testHexColor";',
-            reason: 'Should use exactly the hex color provided by getRandomColorHex');
+        expect(
+          mockController.executedJavaScripts.last,
+          'document.body.style.backgroundColor = "$testHexColor";',
+          reason: 'Should use exactly the hex color from getRandomColorHex',
+        );
       });
     });
   });

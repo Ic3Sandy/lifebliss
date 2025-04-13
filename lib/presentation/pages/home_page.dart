@@ -1,8 +1,9 @@
-import 'package:flutter/material.dart';
-import 'package:webview_flutter/webview_flutter.dart';
-import 'package:flutter/services.dart'; // Required for loading assets
 import 'dart:convert'; // Required for encoding
-import '../../domain/services/color_service.dart';
+
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart'; // Required for loading assets
+import 'package:lifebliss_app/domain/services/color_service.dart';
+import 'package:webview_flutter/webview_flutter.dart';
 
 class HomePage extends StatefulWidget {
   final ColorService? colorService;
@@ -31,7 +32,9 @@ class _HomePageState extends State<HomePage> {
 
     _controller = WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted) // Enable JavaScript
-      ..setBackgroundColor(const Color(0x00000000)) // Optional: Make background transparent
+      ..setBackgroundColor(
+        const Color(0x00000000),
+      ) // Make background transparent
       ..addJavaScriptChannel(
         'flutter',
         onMessageReceived: (JavaScriptMessage message) {
@@ -85,21 +88,25 @@ Page resource error:
     debugPrint('Generated random color in Flutter: $hexColor');
 
     // Apply the color to the webpage background
-    await _controller.runJavaScript('document.body.style.backgroundColor = "$hexColor";');
+    await _controller.runJavaScript(
+      'document.body.style.backgroundColor = "$hexColor";',
+    );
   }
 
   Future<void> _loadHtmlFromAssets() async {
     try {
       final String fileText = await rootBundle.loadString('assets/index.html');
-      _controller.loadRequest(Uri.dataFromString(
+      await _controller.loadRequest(Uri.dataFromString(
         fileText,
         mimeType: 'text/html',
         encoding: Encoding.getByName('utf-8'),
       ));
-    } catch (e) {
+    } on Exception catch (e) {
       debugPrint('Error loading HTML from assets: $e');
       // Optionally load fallback content or show an error message
-      _controller.loadHtmlString('<html><body><h1>Error loading content</h1></body></html>');
+      await _controller.loadHtmlString(
+        '<html><body><h1>Error loading content</h1></body></html>',
+      );
     }
   }
 

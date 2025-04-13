@@ -1,14 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:lifebliss_app/presentation/pages/loading_page.dart';
 import 'package:lifebliss_app/presentation/pages/home_page.dart';
+import 'package:lifebliss_app/presentation/pages/loading_page.dart';
 import '../../utils/test_helpers.dart';
-import '../../utils/test_mocks.dart';
 
 void main() {
-  setUp(() {
-    setupMockWebViewPlatform();
-  });
+  setUp(setupMockWebViewPlatform);
 
   group('LoadingPage', () {
     group('UI tests', () {

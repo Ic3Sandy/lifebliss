@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:webview_flutter/webview_flutter.dart';
 // Export setupMockWebViewPlatform from test_mocks.dart
 export 'test_mocks.dart' show setupMockWebViewPlatform;
 

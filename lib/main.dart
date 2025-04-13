@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'presentation/pages/loading_page.dart';
+import 'package:lifebliss_app/presentation/pages/loading_page.dart';
 
 void main() {
   runApp(const MyApp());

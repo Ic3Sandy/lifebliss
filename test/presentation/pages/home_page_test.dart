@@ -1,16 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:lifebliss_app/presentation/pages/home_page.dart';
 import 'package:webview_flutter/webview_flutter.dart';
-import '../../utils/test_helpers.dart';
-import '../../utils/test_mocks.dart';
 import '../../mocks/mock_color_service.dart';
+import '../../utils/test_helpers.dart';
 
 void main() {
-  setUp(() {
-    setupMockWebViewPlatform();
-  });
+  setUp(setupMockWebViewPlatform);
 
   group('HomePage', () {
     group('UI tests', () {
@@ -20,7 +16,10 @@ void main() {
 
         // Assert - Verify WebView is displayed
         expect(find.byType(WebViewWidget), findsOneWidget);
-        expect(find.byKey(const ValueKey('MockPlatformWebViewWidget')), findsOneWidget);
+        expect(
+          find.byKey(const ValueKey('MockPlatformWebViewWidget')),
+          findsOneWidget,
+        );
       });
 
       testWidgets('should have AppBar with blue background', (WidgetTester tester) async {
