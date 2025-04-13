@@ -2,31 +2,66 @@ import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:flutter/services.dart'; // Required for loading assets
 import 'dart:convert'; // Required for encoding
+import '../../domain/services/color_service.dart';
 
 class HomePage extends StatefulWidget {
-  const HomePage({super.key});
+  final ColorService? colorService;
+
+  const HomePage({super.key, this.colorService});
 
   @override
   State<HomePage> createState() => _HomePageState();
+
+  /// Static method for testing
+  static void testColorService(ColorService colorService) {
+    colorService.getRandomColorHex();
+  }
 }
 
 class _HomePageState extends State<HomePage> {
   late final WebViewController _controller;
+  late final ColorService _colorService;
 
   @override
   void initState() {
     super.initState();
 
+    // Initialize color service
+    _colorService = widget.colorService ?? ColorService();
+
     _controller = WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted) // Enable JavaScript
       ..setBackgroundColor(const Color(0x00000000)) // Optional: Make background transparent
+      ..addJavaScriptChannel(
+        'flutter',
+        onMessageReceived: (JavaScriptMessage message) {
+          debugPrint('Message from JavaScript: ${message.message}');
+
+          // When title is clicked, generate a random color in Flutter
+          if (message.message == 'titleClicked') {
+            _applyRandomBackgroundColor();
+          }
+        },
+      )
       ..setNavigationDelegate(
         NavigationDelegate(
           onProgress: (int progress) {
             // Optional: Implement a loading indicator
           },
           onPageStarted: (String url) {},
-          onPageFinished: (String url) {},
+          onPageFinished: (String url) {
+            debugPrint('Page finished loading');
+
+            // Verify JavaScript channel is working
+            _controller.runJavaScript('''
+              console.log("Testing Flutter channel availability");
+              if (window.flutter) {
+                console.log("Flutter channel is available");
+              } else {
+                console.log("Flutter channel is NOT available");
+              }
+            ''');
+          },
           onWebResourceError: (WebResourceError error) {
             // Optional: Handle loading errors
             debugPrint('''
@@ -37,17 +72,20 @@ Page resource error:
   isForMainFrame: ${error.isForMainFrame}
           ''');
           },
-          // Optional: Control navigation
-          // onNavigationRequest: (NavigationRequest request) {
-          //   if (request.url.startsWith('some_prefix_to_block')) {
-          //     return NavigationDecision.prevent;
-          //   }
-          //   return NavigationDecision.navigate;
-          // },
         ),
       );
 
     _loadHtmlFromAssets(); // Load the local HTML content
+  }
+
+  /// Apply a random background color using Flutter's ColorService
+  Future<void> _applyRandomBackgroundColor() async {
+    // Get random color from Flutter ColorService
+    final String hexColor = _colorService.getRandomColorHex();
+    debugPrint('Generated random color in Flutter: $hexColor');
+
+    // Apply the color to the webpage background
+    await _controller.runJavaScript('document.body.style.backgroundColor = "$hexColor";');
   }
 
   Future<void> _loadHtmlFromAssets() async {
@@ -71,8 +109,8 @@ Page resource error:
       appBar: AppBar(
         backgroundColor: Colors.blue,
       ),
-      body: Container(
-        child: WebViewWidget(controller: _controller),
+      body: WebViewWidget(
+        controller: _controller,
       ),
     );
   }

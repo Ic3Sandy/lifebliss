@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:webview_flutter/webview_flutter.dart';
 import 'package:webview_flutter_platform_interface/webview_flutter_platform_interface.dart';
 import 'package:webview_flutter_platform_interface/src/types/types.dart' hide WebViewPlatform;
 
 /// Mock class for WebViewPlatform to be used in tests
 class MockWebViewPlatform extends WebViewPlatform {
+  // Track the last created controller for easier access in tests
+  static PlatformWebViewController? lastCreatedController;
+  
   @override
   PlatformWebViewWidget createPlatformWebViewWidget(
     PlatformWebViewWidgetCreationParams params,
@@ -15,7 +19,9 @@ class MockWebViewPlatform extends WebViewPlatform {
   PlatformWebViewController createPlatformWebViewController(
     PlatformWebViewControllerCreationParams params,
   ) {
-    return MockPlatformWebViewController(params);
+    final controller = MockPlatformWebViewController(params);
+    lastCreatedController = controller;
+    return controller;
   }
 
   @override
@@ -53,6 +59,12 @@ class MockPlatformWebViewController extends PlatformWebViewController {
   // Track javascript executions
   final List<String> executedJavaScripts = [];
   
+  // Track added JavaScript channels
+  final List<JavaScriptChannelParams> addedJavaScriptChannels = [];
+  
+  // Track navigation delegate
+  PlatformNavigationDelegate? navigationDelegate;
+  
   @override 
   Future<void> loadRequest(LoadRequestParams params) async { 
     if (params.uri.scheme == 'data') {
@@ -86,7 +98,16 @@ class MockPlatformWebViewController extends PlatformWebViewController {
     return Object();
   }
   
-  @override Future<void> setPlatformNavigationDelegate(PlatformNavigationDelegate handler) async { }
+  @override
+  Future<void> addJavaScriptChannel(JavaScriptChannelParams javaScriptChannelParams) async {
+    addedJavaScriptChannels.add(javaScriptChannelParams);
+  }
+  
+  @override 
+  Future<void> setPlatformNavigationDelegate(PlatformNavigationDelegate handler) async {
+    navigationDelegate = handler;
+  }
+  
   @override Future<void> setJavaScriptMode(JavaScriptMode mode) async { }
   @override Future<void> setBackgroundColor(Color color) async { }
   @override Future<void> loadFile(String absoluteFilePath) async { }
@@ -98,8 +119,9 @@ class MockPlatformWebViewController extends PlatformWebViewController {
   @override Future<void> reload() async { }
   @override Future<void> clearCache() async { }
   @override Future<void> clearLocalStorage() async { }
-  @override Future<void> addJavaScriptChannel(JavaScriptChannelParams javaScriptChannelParams) async { }
-  @override Future<void> removeJavaScriptChannel(String javaScriptChannelName) async { }
+  @override Future<void> removeJavaScriptChannel(String javaScriptChannelName) async { 
+    addedJavaScriptChannels.removeWhere((channel) => channel.name == javaScriptChannelName);
+  }
   @override Future<String?> getTitle() async => null;
   @override Future<void> scrollTo(int x, int y) async { }
   @override Future<void> scrollBy(int x, int y) async { }

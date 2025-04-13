@@ -4,6 +4,25 @@
     <title>Home Page</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="styles.css">
+    <script>
+        // Function to call Flutter
+        function callFlutter(message) {
+            console.log("Attempting to call Flutter with: " + message);
+            try {
+                if (window.flutter && typeof window.flutter.postMessage === 'function') {
+                    window.flutter.postMessage(message);
+                    console.log("Message sent to Flutter");
+                    return true;
+                } else {
+                    console.log("Flutter channel not available or not a function");
+                    return false;
+                }
+            } catch (e) {
+                console.log("Error calling Flutter: " + e);
+                return false;
+            }
+        }
+    </script>
 </head>
 <body>
     <h1 id="app-title">Lifebliss</h1>
@@ -12,13 +31,9 @@
     <script>
         window.onload = function() {
             setTimeout(() => {
+                console.log("Setting up title element");
                 const titleElement = document.getElementById('app-title');
                 if (titleElement) {
-                    // Remove pixel calculation for top position
-                    // const viewportHeight = window.innerHeight;
-                    // const titleHeight = titleElement.offsetHeight;
-                    // const topPosition = (viewportHeight / 2) - (titleHeight / 2);
-
                     // Apply styles using CSS transform for centering
                     titleElement.style.position = 'absolute';
                     titleElement.style.top = '50%'; // Position top edge at 50%
@@ -31,14 +46,17 @@
                     // Add cursor style to indicate it's clickable
                     titleElement.style.cursor = 'pointer';
                     
-                    // Add click event listener to change background color
-                    let colorIndex = 0;
-                    const bgColors = ['#f0f0f0', '#e6f7ff', '#fff0f5', '#f0fff0', '#fff8dc'];
-                    
+                    // Add click event listener that calls Flutter for random color
                     titleElement.addEventListener('click', function() {
-                        colorIndex = (colorIndex + 1) % bgColors.length;
-                        document.body.style.backgroundColor = bgColors[colorIndex];
+                        console.log("Title clicked - requesting random color from Flutter");
+                        
+                        // Notify Flutter to generate a random color
+                        callFlutter("titleClicked");
                     });
+
+                    console.log("Click handler attached successfully");
+                } else {
+                    console.error("Could not find app-title element");
                 }
             }, 100); // Keep the small delay for stability
         };
