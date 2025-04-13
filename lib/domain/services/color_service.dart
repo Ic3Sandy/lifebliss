@@ -21,9 +21,9 @@ class ColorService {
     final Color color = getRandomColor();
 
     // Convert to hex format using r, g, b values
-    final String hex = '#${color.r.round().toRadixString(16).padLeft(2, '0')}'
-        '${color.g.round().toRadixString(16).padLeft(2, '0')}'
-        '${color.b.round().toRadixString(16).padLeft(2, '0')}';
+    final String hex = '#${color.r.toInt().toRadixString(16).padLeft(2, '0')}'
+        '${color.g.toInt().toRadixString(16).padLeft(2, '0')}'
+        '${color.b.toInt().toRadixString(16).padLeft(2, '0')}';
 
     return hex;
   }
