@@ -1,40 +1,22 @@
-// Function to call Flutter with improved error handling
-function callFlutter(action, params) {
-    console.log("Attempting to call Flutter with action: " + action);
+// Main communication function for Flutter interaction
+function callFlutter(action, params = {}) {
+    console.log(`Calling Flutter: ${action}`);
     try {
-        // Create message based on the action and params
-        let message = action;
-        if (params && Object.keys(params).length > 0) {
-            try {
-                message = JSON.stringify({
-                    action: action,
-                    params: params
-                });
-            } catch (error) {
-                console.error("Error stringifying params: " + error);
-            }
-        }
+        // Format message
+        const message = Object.keys(params).length > 0 
+            ? JSON.stringify({ action, params }) 
+            : action;
         
-        // Check if Flutter channel exists with proper error handling
-        if (window.flutter && typeof window.flutter.postMessage === 'function') {
+        // Send message if Flutter channel exists
+        if (window.flutter?.postMessage) {
             window.flutter.postMessage(message);
-            console.log("Message sent to Flutter successfully");
             return true;
         } else {
-            if (!window.flutter) {
-                console.error("Flutter channel not available - window.flutter is undefined");
-            } else {
-                console.error("Flutter channel exists but postMessage is not a function");
-                console.error("Type of postMessage: " + typeof window.flutter.postMessage);
-            }
-            // Fall back to direct DOM manipulation
-            if (action === 'titleClicked') {
-                document.body.style.backgroundColor = "#FF8800";
-            }
+            console.warn("Flutter channel not available");
             return false;
         }
-    } catch (e) {
-        console.error("Error calling Flutter: " + e);
+    } catch (error) {
+        console.error(`Error calling Flutter: ${error}`);
         return false;
     }
 }
@@ -103,18 +85,27 @@ function setupTitleElement() {
     }
 }
 
-// Initialize when DOM is ready
+// Initialize the application
 function initializeApp() {
-    console.log("DOM content loaded - setting up title element");
-    setupTitleElement();
+    // Set up title click handler
+    const titleElement = document.getElementById('app-title');
+    if (titleElement) {
+        titleElement.addEventListener('click', () => {
+            document.body.style.backgroundColor = "#FF8800"; // Fallback color change
+            callFlutter("titleClicked", {});
+        });
+    }
     
-    // Check Flutter channel after a delay
-    setTimeout(function() {
-        checkFlutterChannel();
-    }, 500);
+    // Set up gallery button
+    const galleryButton = document.getElementById('gallery-button');
+    if (galleryButton) {
+        galleryButton.addEventListener('click', () => {
+            callFlutter('openGallery', {});
+        });
+    }
 }
 
-// Set up event listeners when the DOM is fully loaded
+// Initialize on DOM content loaded
 document.addEventListener('DOMContentLoaded', initializeApp);
 
 // Fallback for window load event
