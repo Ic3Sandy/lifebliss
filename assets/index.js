@@ -65,27 +65,26 @@ function setupTitleElement() {
 
         console.log("Click handlers attached successfully");
         
-        // Verify positioning
-        setTimeout(function() {
-            const rect = titleElement.getBoundingClientRect();
-            const centerX = window.innerWidth / 2;
-            const centerY = window.innerHeight / 2;
-            const isNearCenter = 
-                Math.abs(rect.left + rect.width/2 - centerX) < 50 && 
-                Math.abs(rect.top + rect.height/2 - centerY) < 50;
-            
-            console.log(`Title positioning: left=${rect.left}, top=${rect.top}, width=${rect.width}, height=${rect.height}`);
-            console.log(`Window center: x=${centerX}, y=${centerY}`);
-            console.log(`Title is ${isNearCenter ? 'centered' : 'NOT centered'}`);
-            
-            if (!isNearCenter) {
-                console.warn("Title element is not properly centered - applying fix");
-                document.body.style.display = 'flex';
-                document.body.style.justifyContent = 'center';
-                document.body.style.alignItems = 'center';
-                document.body.style.minHeight = '100vh';
-            }
-        }, 500);
+        // Verify positioning immediately after finding the element
+        // (Removed setTimeout wrapper)
+        const rect = titleElement.getBoundingClientRect();
+        const centerX = window.innerWidth / 2;
+        const centerY = window.innerHeight / 2;
+        const isNearCenter = 
+            Math.abs(rect.left + rect.width/2 - centerX) < 50 && 
+            Math.abs(rect.top + rect.height/2 - centerY) < 50;
+        
+        console.log(`Title positioning: left=${rect.left}, top=${rect.top}, width=${rect.width}, height=${rect.height}`);
+        console.log(`Window center: x=${centerX}, y=${centerY}`);
+        console.log(`Title is ${isNearCenter ? 'centered' : 'NOT centered'}`);
+        
+        if (!isNearCenter) {
+            console.warn("Title element is not properly centered - applying fix");
+            document.body.style.display = 'flex';
+            document.body.style.justifyContent = 'center';
+            document.body.style.alignItems = 'center';
+            document.body.style.minHeight = '100vh';
+        }
     } else {
         console.error("Could not find app-title element");
     }

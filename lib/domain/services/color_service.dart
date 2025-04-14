@@ -6,83 +6,81 @@ import 'package:webview_flutter/webview_flutter.dart';
 
 /// Service responsible for generating random colors
 class ColorService {
+  // --- Constants ---
+  static const double _minSaturation = 0.5; // Ensure colors are reasonably saturated
+  static const double _maxSaturation = 1.0;
+  static const double _minLightness = 0.5; // Ensure colors are bright enough
+  static const double _maxLightness = 0.8; // Avoid overly pale colors
+  static const double _alpha = 1.0; // Fully opaque
+  static const int _hexRadix = 16;
+  static const int _hexPadding = 2;
+  // --- End Constants ---
+
   // Use a time-based seed for the random number generator
   final Random _random = Random(DateTime.now().millisecondsSinceEpoch);
 
-  // Define a list of vibrant colors to use as fallback
+  // Define a list of vibrant colors to use as fallback (kept as safety net)
+  // Consider if this is still needed after HSL refactoring
   final List<String> _vibrantColors = [
-    '#FF5733',
-    '#33FF57',
-    '#3357FF',
-    '#F033FF',
-    '#FF33F0',
-    '#FFAA33',
-    '#33FFAA',
-    '#AA33FF',
-    '#33AAFF',
-    '#FF33AA'
+    '#FF5733', // Vibrant Orange
+    '#33FF57', // Vibrant Green
+    '#3357FF', // Vibrant Blue
+    '#FF33A8', // Vibrant Pink
+    '#FFD700', // Gold
+    '#33FFAA', // Medium Aquamarine
+    '#AA33FF', // Vibrant Purple
+    '#33AAFF', // Sky Blue
+    '#FF8C00', // Dark Orange
+    '#00CED1' // Dark Turquoise
   ];
 
-  /// Returns a random Material color
+  /// Returns a random Material color generated using HSL for better control
+  /// over saturation and lightness.
   Color getRandomColor() {
-    // Get random values for RGB - ensure they're not too dark
-    // Minimum threshold to avoid very dark/black colors - increased from 30 to 50
-    const int minBrightness = 50;
-    const int maxValue = 255;
+    // Generate HSL components within desired ranges
+    final double hue = _random.nextDouble() * 360; // Full hue range
+    final double saturation = _random.nextDouble() * (_maxSaturation - _minSaturation) + _minSaturation;
+    final double lightness = _random.nextDouble() * (_maxLightness - _minLightness) + _minLightness;
 
-    // Generate random values with minimum brightness
-    int r = _random.nextInt(maxValue - minBrightness) + minBrightness;
-    int g = _random.nextInt(maxValue - minBrightness) + minBrightness;
-    int b = _random.nextInt(maxValue - minBrightness) + minBrightness;
+    // Create HSL color
+    final HSLColor hslColor = HSLColor.fromAHSL(_alpha, hue, saturation, lightness);
 
-    // Ensure at least one component has a high value for more vibrant colors
-    final int maxComponent = [r, g, b].reduce((a, b) => a > b ? a : b);
-    if (maxComponent < 150) {
-      // Boost the brightest component even more
-      final int index = [r, g, b].indexOf(maxComponent);
-      if (index == 0) {
-        r = _random.nextInt(105) + 150; // 150-255
-      }
-      if (index == 1) {
-        g = _random.nextInt(105) + 150;
-      }
-      if (index == 2) {
-        b = _random.nextInt(105) + 150;
-      }
-    }
+    // Convert to RGB
+    final Color rgbColor = hslColor.toColor();
 
-    developer.log('Generated RGB values: r=$r, g=$g, b=$b');
+    developer.log(
+        'Generated HSL: H=${hue.toStringAsFixed(1)}, S=${saturation.toStringAsFixed(2)}, L=${lightness.toStringAsFixed(2)} -> RGB: ${rgbColor.toString()}');
 
-    return Color.fromRGBO(r, g, b, 1.0);
+    return rgbColor;
+  }
+
+  /// Converts a Color object to its hex string representation (e.g., #FF0000).
+  /// Ensures components are clamped to 0-255 range.
+  static String colorToHex(Color color) {
+    final r = color.red.clamp(0, 255).toInt().toRadixString(_hexRadix).padLeft(_hexPadding, '0');
+    final g = color.green.clamp(0, 255).toInt().toRadixString(_hexRadix).padLeft(_hexPadding, '0');
+    final b = color.blue.clamp(0, 255).toInt().toRadixString(_hexRadix).padLeft(_hexPadding, '0');
+    return '#$r$g$b'.toUpperCase();
   }
 
   /// Returns a random color as a hex string (e.g., #FF5733)
-  String getRandomColorHex({int maxAttempts = 3}) {
-    // Keep track of attempts to prevent infinite loops
-    int attempts = 0;
-    String hex = '';
+  /// Simplified after switching getRandomColor to use HSL.
+  String getRandomColorHex() {
+    final Color color = getRandomColor();
+    String hex;
 
-    while (attempts < maxAttempts) {
-      final Color color = getRandomColor();
+    try {
+      // Convert to hex format using the static helper
+      hex = ColorService.colorToHex(color);
 
-      // Convert to hex format using r, g, b values
-      final r = color.r.toInt().toRadixString(16).padLeft(2, '0');
-      final g = color.g.toInt().toRadixString(16).padLeft(2, '0');
-      final b = color.b.toInt().toRadixString(16).padLeft(2, '0');
-      hex = '#$r$g$b';
-
-      hex = hex.toUpperCase();
-
-      // Check if the color is too dark
-      if (hex.toLowerCase() != '#000000' && _isColorBrightEnough(color)) {
-        break;
+      // Basic check: If somehow resulted in black (highly unlikely with HSL constraints), use fallback.
+      if (hex == '#000000') {
+        developer.log('Generated black color unexpectedly, using fallback.');
+        hex = _vibrantColors[_random.nextInt(_vibrantColors.length)];
       }
-
-      attempts++;
-    }
-
-    // If we couldn't generate a good color after max attempts, use a vibrant fallback
-    if (hex.toLowerCase() == '#000000' || !_isColorBrightEnough(_hexToColor(hex))) {
+    } catch (e) {
+      // Log error during hex conversion and use fallback
+      developer.log('Error converting color to hex: $e. Using fallback.');
       hex = _vibrantColors[_random.nextInt(_vibrantColors.length)];
     }
 
@@ -90,34 +88,19 @@ class ColorService {
     return hex;
   }
 
-  /// Checks if a color is bright enough (not too dark)
-  bool _isColorBrightEnough(Color color) {
-    // Calculate perceived brightness using the formula
-    // (0.299*R + 0.587*G + 0.114*B)
-    final r = 0.299 * color.r;
-    final g = 0.587 * color.g;
-    final b = 0.114 * color.b;
-    final double brightness = (r + g + b) / 255;
-
-    // Consider bright enough if above 0.3 (30% brightness)
-    return brightness > 0.3;
-  }
-
   /// Sets the background color of the WebView to a random color
   Future<void> setRandomBackgroundColor(WebViewController controller) async {
     final String hexColor = getRandomColorHex();
 
     // Execute JavaScript to change the background color
-    await controller.runJavaScript(
-      'document.body.style.backgroundColor = "$hexColor";',
-    );
-
-    developer.log('Set WebView background color to: $hexColor');
-  }
-
-  /// Convert a hex color string to a Color object
-  Color _hexToColor(String hexString) {
-    final hexColor = hexString.replaceFirst('#', '');
-    return Color(int.parse(hexColor, radix: 16) | 0xFF000000);
+    try {
+      await controller.runJavaScript(
+        'document.body.style.backgroundColor = "$hexColor";',
+      );
+      developer.log('Set WebView background color to: $hexColor');
+    } catch (e) {
+      developer.log('Error setting WebView background color: $e');
+      // Handle or log the error appropriately
+    }
   }
 }

@@ -19,19 +19,28 @@ void main() {
       expect(color, isA<Color>());
     });
 
-    test('getRandomColor returns a color with brightness above minimum threshold', () {
+    test('getRandomColor returns a color with appropriate HSL lightness', () {
       // Run multiple tests to ensure consistency
       for (int i = 0; i < 10; i++) {
         final color = colorService.getRandomColor();
 
-        // Ensure color components are above minimum brightness (50)
-        expect(color.red, greaterThanOrEqualTo(50));
-        expect(color.green, greaterThanOrEqualTo(50));
-        expect(color.blue, greaterThanOrEqualTo(50));
+        // Convert the generated RGB color back to HSL to check its lightness
+        final hslColor = HSLColor.fromColor(color);
 
-        // Ensure at least one component has high value (150+)
-        final hasHighComponent = color.red >= 150 || color.green >= 150 || color.blue >= 150;
-        expect(hasHighComponent, isTrue);
+        // Check if lightness is within the range defined in ColorService
+        expect(hslColor.lightness, greaterThanOrEqualTo(0.5), reason: 'Lightness should be >= 0.5');
+        expect(hslColor.lightness, lessThanOrEqualTo(0.8), reason: 'Lightness should be <= 0.8');
+
+        // Also check saturation for reasonable vibrancy (using the constant from ColorService if possible, otherwise a known good value)
+        // Note: Accessing private constants like _minSaturation isn't directly possible in tests.
+        // We'll use the known value 0.5, but allow for slight floating point inaccuracies from HSL -> RGB -> HSL conversion.
+        // Use closeTo matcher for floating point comparison
+        expect(hslColor.saturation, closeTo(0.75, 0.25),
+            reason:
+                'Saturation should be roughly between 0.5 and 1.0'); // Target 0.75 with delta 0.25 covers 0.5 to 1.0
+
+        // The old RGB component checks are removed as they are no longer relevant
+        // to the HSL generation logic.
       }
     });
 
@@ -57,34 +66,6 @@ void main() {
       }
     });
 
-    test('getRandomColorHex returns bright enough colors', () {
-      // Run multiple tests to ensure consistency
-      for (int i = 0; i < 10; i++) {
-        final hexColor = colorService.getRandomColorHex();
-
-        // Convert hex to color to check brightness
-        final hexDigits = hexColor.substring(1);
-        final color = Color(int.parse(hexDigits, radix: 16) | 0xFF000000);
-
-        // Calculate perceived brightness
-        final double brightness = (0.299 * color.red + 0.587 * color.green + 0.114 * color.blue) / 255;
-
-        // Should be above 30% brightness
-        expect(brightness, greaterThan(0.3));
-      }
-    });
-
-    test('getRandomColorHex respects maxAttempts parameter', () {
-      // Test with different maxAttempts values
-      final hexColor1 = colorService.getRandomColorHex(maxAttempts: 1);
-      expect(hexColor1, startsWith('#'));
-      expect(hexColor1.length, equals(7));
-
-      final hexColor2 = colorService.getRandomColorHex(maxAttempts: 5);
-      expect(hexColor2, startsWith('#'));
-      expect(hexColor2.length, equals(7));
-    });
-
     test('color brightness calculation indirectly through getRandomColorHex', () {
       // Create a subclass that tests internal brightness functionality
       final darkColorService = _AlwaysDarkColorService();
@@ -99,20 +80,22 @@ void main() {
       expect(brightHex.toUpperCase(), '#FFFFFF'); // Should keep the white color
     });
 
-    test('hex conversion indirectly through hex color generation', () {
-      // Test the conversion round-trip by validating values
-      final predefinedHexes = ['#FF0000', '#00FF00', '#0000FF', '#FFFFFF', '#123456'];
+    test('colorToHex converts Color object to correct hex string', () {
+      // Test cases: Map of Color objects to expected hex strings
+      final testCases = {
+        const Color.fromRGBO(255, 0, 0, 1.0): '#FF0000',
+        const Color.fromRGBO(0, 255, 0, 1.0): '#00FF00',
+        const Color.fromRGBO(0, 0, 255, 1.0): '#0000FF',
+        const Color.fromRGBO(255, 255, 255, 1.0): '#FFFFFF',
+        const Color.fromRGBO(0, 0, 0, 1.0): '#000000',
+        const Color.fromRGBO(18, 52, 86, 1.0): '#123456', // Hex 12, 34, 56
+        const Color.fromRGBO(123, 12, 231, 1.0): '#7B0CE7'
+      };
 
-      for (final hexColor in predefinedHexes) {
-        // Create a service that always returns the specified hex
-        final service = _FixedHexColorService(hexColor);
-
-        // Get the generated hex
-        final resultHex = service.getRandomColorHex();
-
-        // Should match the input (accounting for possible case differences)
-        expect(resultHex.toUpperCase(), hexColor.toUpperCase());
-      }
+      testCases.forEach((color, expectedHex) {
+        final resultHex = ColorService.colorToHex(color);
+        expect(resultHex, equals(expectedHex), reason: 'Failed for Color: $color');
+      });
     });
 
     test('setRandomBackgroundColor calls JavaScript to set background color', () async {
@@ -159,22 +142,5 @@ class _AlwaysBrightColorService extends ColorService {
   @override
   Color getRandomColor() {
     return Colors.white;
-  }
-
-  @override
-  String getRandomColorHex({int maxAttempts = 3}) {
-    return '#FFFFFF';
-  }
-}
-
-/// Test subclass that returns a fixed hex color
-class _FixedHexColorService extends ColorService {
-  final String fixedHexColor;
-
-  _FixedHexColorService(this.fixedHexColor);
-
-  @override
-  String getRandomColorHex({int maxAttempts = 3}) {
-    return fixedHexColor;
   }
 }

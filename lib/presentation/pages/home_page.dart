@@ -25,15 +25,12 @@ class _HomePageState extends State<HomePage> {
   late final WebViewController _controller;
   late final ColorService _colorService;
   bool _webViewInitialized = false;
-  Timer? _initTimer;
   String? _htmlContent;
   String? _cssContent;
   String? _jsContent;
 
   @override
   void dispose() {
-    // Cancel any pending timers
-    _initTimer?.cancel();
     super.dispose();
   }
 
@@ -195,35 +192,6 @@ Page resource error:
         mimeType: 'text/html',
         encoding: Encoding.getByName('utf-8'),
       ));
-
-      // Add a delay to ensure the WebView is fully loaded
-      _initTimer = Timer(const Duration(milliseconds: 1000), () {
-        if (mounted) {
-          // Test JavaScript execution and the DOM with safer execution
-          _safeRunJavaScript('''
-            console.log("WebView loaded - testing DOM access");
-            const title = document.getElementById('app-title');
-            if (title) {
-              console.log(`Title element found: \${title.innerText}`);
-              
-              // Log actual position for debugging
-              const rect = title.getBoundingClientRect();
-              console.log(`Title position: top=\${rect.top}, left=\${rect.left}`);
-              
-              // Force element to center if needed
-              if (Math.abs(rect.top - window.innerHeight/2) > 50) {
-                console.log("Fixing title position via JS");
-                document.body.style.display = 'flex';
-                document.body.style.justifyContent = 'center';
-                document.body.style.alignItems = 'center';
-                document.body.style.minHeight = '100vh';
-              }
-            } else {
-              console.error("CRITICAL: app-title element not found in DOM");
-            }
-          ''');
-        }
-      });
     } on Exception catch (e) {
       debugPrint('Error loading HTML from assets: $e');
       // Provide a simpler fallback with minimal content
@@ -253,12 +221,13 @@ Page resource error:
           // Add a button to navigate to Todo page
           IconButton(
             icon: const Icon(Icons.list),
+            tooltip: 'Todo List',
             onPressed: () {
-              Navigator.of(context).push(
+              Navigator.push(
+                context,
                 MaterialPageRoute(builder: (context) => const TodoPage()),
               );
             },
-            tooltip: 'Todo List',
           ),
           // Add a refresh button for testing
           IconButton(

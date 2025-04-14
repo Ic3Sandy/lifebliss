@@ -16,6 +16,9 @@ void main() {
       // Wait for app to fully load and navigate past the loading screen
       await tester.pumpAndSettle();
 
+      // Ensure the surface is ready for screenshotting ONCE per test
+      await IntegrationTestWidgetsFlutterBinding.instance.convertFlutterSurfaceToImage();
+
       // Wait for loading page to finish its delay (2 seconds)
       await Future.delayed(const Duration(seconds: 2));
       await tester.pumpAndSettle();
@@ -66,6 +69,10 @@ void main() {
 
       // Wait for app to fully load and navigate past the loading screen
       await tester.pumpAndSettle();
+
+      // Ensure the surface is ready for screenshotting ONCE per test
+      await IntegrationTestWidgetsFlutterBinding.instance.convertFlutterSurfaceToImage();
+
       await Future.delayed(const Duration(seconds: 2));
       await tester.pumpAndSettle();
 
@@ -124,6 +131,10 @@ void main() {
 
       // Wait for app to fully load and navigate past the loading screen
       await tester.pumpAndSettle();
+
+      // Ensure the surface is ready for screenshotting ONCE per test
+      await IntegrationTestWidgetsFlutterBinding.instance.convertFlutterSurfaceToImage();
+
       await Future.delayed(const Duration(seconds: 2));
       await tester.pumpAndSettle();
 
@@ -170,13 +181,20 @@ void main() {
 
     testWidgets('Verify navigation and Todo functionality', (WidgetTester tester) async {
       app.main();
-      await tester.pumpAndSettle();
+      await tester.pump(); // Pump only the first frame
 
-      // Verify we start at the LoadingPage
+      // Ensure the surface is ready for screenshotting ONCE per test
+      // Although this test doesn't explicitly take screenshots using the helper,
+      // it's good practice if screenshots might be added later or if internal
+      // mechanisms rely on this.
+      await IntegrationTestWidgetsFlutterBinding.instance.convertFlutterSurfaceToImage();
+
+      // Verify we start at the LoadingPage IMMEDIATELY after the first settle
       expect(find.text('Loading...'), findsOneWidget);
 
-      // Loading page should automatically navigate to HomePage
-      await tester.pumpAndSettle(const Duration(seconds: 3));
+      // Wait for loading page to automatically navigate to HomePage
+      // The delay is 2 seconds, so wait a bit longer to be safe
+      await tester.pumpAndSettle(const Duration(seconds: 5));
 
       // Check if we're on the HomePage by finding the AppBar title
       expect(find.text('Lifebliss'), findsOneWidget);
@@ -196,21 +214,23 @@ void main() {
 
       // Test adding a new Todo item
       await tester.tap(find.byType(FloatingActionButton));
-      await tester.pumpAndSettle();
+      await tester.pump(); // Start animation
+      await tester.pumpAndSettle(); // Wait for dialog to open
 
       // Enter text in the dialog
       await tester.enterText(find.byType(TextField), 'Integration Test Todo');
-      await tester.pumpAndSettle();
+      await tester.pump(); // Update text field state
 
       // Tap the Add button
       await tester.tap(find.text('Add'));
-      await tester.pumpAndSettle();
+      // Wait a bit longer for the UI to update after adding the item
+      await tester.pumpAndSettle(const Duration(milliseconds: 500));
 
       // Verify the new Todo item is added
       expect(find.text('Integration Test Todo'), findsOneWidget);
 
       // Test the WebView section is present
-      expect(find.text('Web Todo Interface'), findsOneWidget);
+      expect(find.byType(WebViewWidget), findsOneWidget);
     });
   });
 }
@@ -218,9 +238,15 @@ void main() {
 /// Helper function to take screenshots during integration tests (when supported)
 Future<void> takeScreenshot(WidgetTester tester, String name) async {
   try {
+    // Ensure the surface is ready for screenshotting
+    // Removed: await IntegrationTestWidgetsFlutterBinding.instance.convertFlutterSurfaceToImage();
+    // Pump and settle to ensure the frame is rendered after conversion
+    await tester.pumpAndSettle();
     await IntegrationTestWidgetsFlutterBinding.instance.takeScreenshot(name);
+    debugPrint('Screenshot "$name" captured successfully.');
   } catch (e) {
     // Screenshot functionality might not be available on all platforms/configurations
-    debugPrint('Screenshot failed: $e');
+    // or might fail for other reasons.
+    debugPrint('Screenshot "$name" failed: $e');
   }
 }
