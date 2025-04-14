@@ -1,0 +1,26 @@
+{
+  "id": "TASK-001",
+  "title": "Setup use case to use javascript to call flutter and flutter call native code",
+  "status": "TODO",
+  "priority": "HIGH",
+  "description": "Use case to use javascript to call flutter and flutter call native code, show dialog native code",
+  "acceptance_criteria": [
+    "Run all unit tests passing",
+    "Run all integration tests passing",
+    "Run all code coverage 90%",
+    "Use case is working as expected"
+  ],
+  "ai_instructions": {
+    "steps": [
+      "Develop by use TDD approach",
+      "Create sample button in html to call flutter and flutter call native code",
+      "Use webview_flutter to load a web page",
+      "Use javascript to call flutter",
+      "Use flutter to call native code",
+      "Show dialog native code"
+    ],
+    "additional_notes": "Use the existing project architecture patterns. Ensure proper error handling and loading states."
+  },
+  "created_at": "2026-04-14",
+  "due_date": "2026-04-14"
+}

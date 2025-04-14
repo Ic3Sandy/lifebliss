@@ -167,6 +167,51 @@ void main() {
       // The test passes if the app doesn't crash and the WebView remains visible
       expect(find.byType(WebViewWidget), findsOneWidget);
     });
+
+    testWidgets('Verify navigation and Todo functionality', (WidgetTester tester) async {
+      app.main();
+      await tester.pumpAndSettle();
+
+      // Verify we start at the LoadingPage
+      expect(find.text('Loading...'), findsOneWidget);
+
+      // Loading page should automatically navigate to HomePage
+      await tester.pumpAndSettle(const Duration(seconds: 3));
+
+      // Check if we're on the HomePage by finding the AppBar title
+      expect(find.text('Lifebliss'), findsOneWidget);
+
+      // Find and tap the Todo list button in the AppBar
+      final todoButton = find.byIcon(Icons.list);
+      expect(todoButton, findsOneWidget);
+      await tester.tap(todoButton);
+      await tester.pumpAndSettle();
+
+      // Verify we're on the TodoPage
+      expect(find.text('Todo List'), findsOneWidget);
+
+      // Check for the sample todos
+      expect(find.text('Learn Flutter'), findsOneWidget);
+      expect(find.text('Build Todo App'), findsOneWidget);
+
+      // Test adding a new Todo item
+      await tester.tap(find.byType(FloatingActionButton));
+      await tester.pumpAndSettle();
+
+      // Enter text in the dialog
+      await tester.enterText(find.byType(TextField), 'Integration Test Todo');
+      await tester.pumpAndSettle();
+
+      // Tap the Add button
+      await tester.tap(find.text('Add'));
+      await tester.pumpAndSettle();
+
+      // Verify the new Todo item is added
+      expect(find.text('Integration Test Todo'), findsOneWidget);
+
+      // Test the WebView section is present
+      expect(find.text('Web Todo Interface'), findsOneWidget);
+    });
   });
 }
 

@@ -4,6 +4,7 @@ import 'dart:convert'; // Required for encoding
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart'; // Required for loading assets
 import 'package:lifebliss_app/domain/services/color_service.dart';
+import 'package:lifebliss_app/presentation/pages/todo_page.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
 class HomePage extends StatefulWidget {
@@ -248,6 +249,16 @@ Page resource error:
               debugPrint('Manual color change test');
               _applyRandomBackgroundColor();
             },
+          ),
+          // Add a button to navigate to Todo page
+          IconButton(
+            icon: const Icon(Icons.list),
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (context) => const TodoPage()),
+              );
+            },
+            tooltip: 'Todo List',
           ),
           // Add a refresh button for testing
           IconButton(

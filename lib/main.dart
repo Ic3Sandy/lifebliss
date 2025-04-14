@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:lifebliss_app/presentation/pages/loading_page.dart';
+import 'package:lifebliss_app/presentation/pages/todo_page.dart';
 
 void main() {
   runApp(const MyApp());
@@ -19,6 +20,9 @@ class MyApp extends StatelessWidget {
         useMaterial3: true,
       ),
       home: const LoadingPage(),
+      routes: {
+        '/todo': (context) => const TodoPage(),
+      },
     );
   }
 }
