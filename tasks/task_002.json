@@ -1,0 +1,27 @@
+{
+    "id": "TASK-002",
+    "title": "Implement open photo gallery functionality from HTML",
+    "status": "TODO",
+    "priority": "HIGH",
+    "description": "Add functionality to open the device's photo gallery from the HTML interface, allowing users to select photos through the Flutter app",
+    "acceptance_criteria": [
+        "Run all unit tests passing",
+        "Run all integration tests passing",
+        "Run all code coverage 90%",
+        "HTML button successfully triggers Flutter to open the device photo gallery",
+        "Selected photos are accessible in the Flutter application"
+    ],
+    "ai_instructions": {
+        "steps": [
+            "Develop by use TDD approach",
+            "Create a button in HTML to open the photo gallery",
+            "Add JavaScript to call Flutter when button is clicked",
+            "Implement Flutter method to handle the JavaScript call",
+            "Add native code to open the device photo gallery",
+            "Handle photo selection and return data to Flutter"
+        ],
+        "additional_notes": "Use the existing project architecture patterns. Ensure proper error handling and loading states."
+    },
+    "created_at": "2026-04-15",
+    "due_date": "2026-04-15"
+}

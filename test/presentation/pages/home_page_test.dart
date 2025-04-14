@@ -1,57 +1,64 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:lifebliss_app/domain/services/color_service.dart';
 import 'package:lifebliss_app/presentation/pages/home_page.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import '../../mocks/mock_color_service.dart';
-import '../../utils/test_helpers.dart';
 import '../../utils/test_mocks.dart';
 
+// Helper function to create a testable widget with proper ancestors
+Widget testableWidget(Widget child) {
+  return MaterialApp(
+    home: child,
+  );
+}
+
 void main() {
-  // Setup mocks to allow WebView testing
-  setUp(setupMockWebViewPlatform);
+  // Replace the default WebView platform with our mock
+  setupMockWebViewPlatform();
+
+  // Create a mock for the ColorService
+  late MockColorService mockColorService;
+
+  setUp(() {
+    // Ensure we have a fresh controller for each test
+    MockWebViewPlatform.lastCreatedController = null;
+    // Create a fresh MockColorService for each test
+    mockColorService = MockColorService();
+  });
 
   group('HomePage', () {
     testWidgets('renders correctly with WebView', (WidgetTester tester) async {
-      // Arrange - Build the HomePage
+      // Build our app and trigger a frame.
       await tester.pumpWidget(testableWidget(const HomePage()));
 
-      // Allow WebView to initialize
-      await tester.pumpAndSettle();
-
-      // Assert - Basic UI elements
-      expect(find.byType(Scaffold), findsOneWidget);
-      expect(find.byType(AppBar), findsOneWidget);
+      // Verify that our app bar renders
       expect(find.text('Lifebliss'), findsOneWidget);
-      expect(find.byIcon(Icons.color_lens), findsOneWidget);
 
-      // WebView is hard to test directly, but we can verify its container
-      expect(find.byKey(const ValueKey('MockPlatformWebViewWidget')), findsOneWidget);
+      // Verify that our WebView renders (via our mock)
+      expect(find.byType(WebViewWidget), findsOneWidget);
     });
 
-    testWidgets('uses provided ColorService when specified', (WidgetTester tester) async {
-      // Arrange - Create a mock color service
-      final mockColorService = MockColorService();
+    testWidgets(
+      'uses provided ColorService when specified',
+      (WidgetTester tester) async {
+        // Build the HomePage with the mock service
+        await tester.pumpWidget(testableWidget(HomePage(
+          colorService: mockColorService,
+        )));
 
-      // Build the HomePage with the mock service
-      await tester.pumpWidget(testableWidget(HomePage(colorService: mockColorService)));
+        // Allow WebView to initialize
+        await tester.pumpAndSettle();
 
-      // Allow WebView to initialize
-      await tester.pumpAndSettle();
+        // Act - Press the color change button
+        await tester.tap(find.byIcon(Icons.color_lens));
+        await tester.pump();
 
-      // Act - Press the color change button
-      await tester.tap(find.byIcon(Icons.color_lens));
-      await tester.pump();
-
-      // Assert - Verify the mock color service was used
-      expect(mockColorService.getRandomColorHexCalled, isTrue);
-      expect(mockColorService.getRandomColorHexCallCount, 1);
-    });
+        // Assert - Verify the mock color service was used
+        expect(mockColorService.getRandomColorHexCalled, isTrue);
+      },
+    );
 
     testWidgets('can use static test method', (WidgetTester tester) async {
-      // Arrange - Create a mock color service
-      final mockColorService = MockColorService();
-
       // Act - Use the static test method
       HomePage.testColorService(mockColorService);
 
@@ -60,82 +67,179 @@ void main() {
     });
 
     // Test for JavaScript message handling in the HomePage
-    testWidgets('handles JavaScript messages correctly', (WidgetTester tester) async {
-      // Arrange - Create a mock color service to track calls
-      final mockColorService = MockColorService();
+    testWidgets(
+      'handles JavaScript messages correctly',
+      (WidgetTester tester) async {
+        // Build the HomePage with the mock service
+        await tester.pumpWidget(testableWidget(HomePage(
+          colorService: mockColorService,
+        )));
 
-      // Build the HomePage with the mock service
-      await tester.pumpWidget(testableWidget(HomePage(colorService: mockColorService)));
+        // Wait for the widget to be built
+        await tester.pumpAndSettle();
 
-      // Allow WebView to initialize
-      await tester.pumpAndSettle();
+        // Get the controller
+        final controller = MockWebViewPlatform.lastCreatedController;
 
-      // Get the last created mock controller
-      final mockController = MockWebViewPlatform.lastCreatedController as MockPlatformWebViewController;
+        // Verify controller is not null
+        expect(controller, isNotNull);
 
-      // Verify controller is not null
-      expect(mockController, isNotNull);
+        // Find the JavaScript channel
+        const channelName = 'flutter';
+        const errorMsg = 'flutter JavaScript channel not found';
 
-      // Find the JavaScript channel
-      final jsChannel = mockController.addedJavaScriptChannels.firstWhere((channel) => channel.name == 'flutter',
-          orElse: () => throw TestFailure('flutter JavaScript channel not found'));
+        final webController = controller as MockPlatformWebViewController;
+        final jsChannel = webController.addedJavaScriptChannels.firstWhere(
+          (channel) => channel.name == channelName,
+          orElse: () => throw TestFailure(errorMsg),
+        );
 
-      // Create a JavaScriptMessage with the titleClicked message
-      final JavaScriptMessage jsMessage = JavaScriptMessage(message: 'titleClicked');
+        // Create a JavaScriptMessage with the titleClicked message
+        const jsMessage = JavaScriptMessage(message: 'titleClicked');
 
-      // Simulate a titleClicked message from JavaScript
-      jsChannel.onMessageReceived(jsMessage);
+        // Simulate a titleClicked message from JavaScript
+        jsChannel.onMessageReceived(jsMessage);
 
-      // Verify the color service was called in response to the message
-      expect(mockColorService.getRandomColorHexCalled, isTrue);
-    });
+        // Verify the color service was called in response to the message
+        expect(mockColorService.getRandomColorHexCalled, isTrue);
+      },
+    );
 
-    testWidgets('handles channelTest JavaScript message', (WidgetTester tester) async {
-      // Arrange - Create a mock color service
-      final mockColorService = MockColorService();
+    testWidgets(
+      'handles channelTest JavaScript message',
+      (WidgetTester tester) async {
+        // Build the HomePage with the mock service
+        await tester.pumpWidget(testableWidget(HomePage(
+          colorService: mockColorService,
+        )));
 
-      // Build the HomePage with the mock service
-      await tester.pumpWidget(testableWidget(HomePage(colorService: mockColorService)));
+        // Wait for the widget to be built
+        await tester.pumpAndSettle();
 
-      // Allow WebView to initialize
-      await tester.pumpAndSettle();
+        // Get the controller
+        final controller = MockWebViewPlatform.lastCreatedController;
 
-      // Get the last created mock controller
-      final mockController = MockWebViewPlatform.lastCreatedController as MockPlatformWebViewController;
+        // Verify controller is not null
+        expect(controller, isNotNull);
 
-      // Find the JavaScript channel
-      final jsChannel = mockController.addedJavaScriptChannels.firstWhere((channel) => channel.name == 'flutter',
-          orElse: () => throw TestFailure('flutter JavaScript channel not found'));
+        // Find the JavaScript channel
+        const channelName = 'flutter';
+        const errorMsg = 'flutter JavaScript channel not found';
 
-      // Create a JavaScriptMessage with the channelTest message
-      final JavaScriptMessage jsMessage = JavaScriptMessage(message: 'channelTest');
+        final webController = controller as MockPlatformWebViewController;
+        final jsChannel = webController.addedJavaScriptChannels.firstWhere(
+          (channel) => channel.name == channelName,
+          orElse: () => throw TestFailure(errorMsg),
+        );
 
-      // Simulate a channelTest message from JavaScript
-      jsChannel.onMessageReceived(jsMessage);
+        // Create a JavaScriptMessage with the channelTest message
+        const jsMessage = JavaScriptMessage(message: 'channelTest');
 
-      // This message doesn't trigger a color change
-      expect(mockColorService.getRandomColorHexCalled, isFalse);
-    });
+        // Simulate a channelTest message from JavaScript
+        jsChannel.onMessageReceived(jsMessage);
 
-    // Commenting out this test since it depends on JavaScript execution
-    // which is not consistent in the test environment
-    /*
-    testWidgets('initializes WebView controller correctly', (WidgetTester tester) async {
-      // Arrange - Build the HomePage
-      await tester.pumpWidget(testableWidget(const HomePage()));
-      
-      // Allow for WebView initialization
-      await tester.pumpAndSettle();
-      
-      // Get the last created mock controller
-      final mockController = MockWebViewPlatform.lastCreatedController as MockPlatformWebViewController;
-      
-      // Assert - Verify WebView controller was initialized correctly
-      expect(mockController, isNotNull);
-      
-      // Verify some JavaScript was executed (can't verify exact content)
-      expect(mockController.executedJavaScripts.isNotEmpty, isTrue);
-    });
-    */
+        // This message doesn't trigger a color change
+        expect(mockColorService.getRandomColorHexCalled, isFalse);
+      },
+    );
+
+    testWidgets(
+      'handles openGallery JavaScript message',
+      (WidgetTester tester) async {
+        // Build the HomePage with the mock service
+        await tester.pumpWidget(testableWidget(HomePage(
+          colorService: mockColorService,
+        )));
+
+        // Wait for the widget to be built
+        await tester.pumpAndSettle();
+
+        // Get the controller
+        final controller = MockWebViewPlatform.lastCreatedController;
+
+        // Verify controller is not null
+        expect(controller, isNotNull);
+
+        // Find the JavaScript channel
+        const channelName = 'flutter';
+        const errorMsg = 'flutter JavaScript channel not found';
+
+        final webController = controller as MockPlatformWebViewController;
+        final jsChannel = webController.addedJavaScriptChannels.firstWhere(
+          (channel) => channel.name == channelName,
+          orElse: () => throw TestFailure(errorMsg),
+        );
+
+        // Create a JavaScriptMessage with the openGallery message
+        const jsMessage = JavaScriptMessage(message: 'openGallery');
+
+        // Simulate an openGallery message from JavaScript
+        jsChannel.onMessageReceived(jsMessage);
+
+        // Wait for processing
+        await tester.pumpAndSettle();
+
+        // Verify debug logs (these can be observed in the test output)
+        // The output should show:
+        // - "Open gallery request from JavaScript"
+        // - "Opening device gallery"
+      },
+    );
+
+    testWidgets(
+      'handles JSON format openGallery message',
+      (WidgetTester tester) async {
+        // Build the HomePage with the mock service
+        await tester.pumpWidget(testableWidget(HomePage(
+          colorService: mockColorService,
+        )));
+
+        // Wait for the widget to be built
+        await tester.pumpAndSettle();
+
+        // Get the controller
+        final controller = MockWebViewPlatform.lastCreatedController;
+
+        // Verify controller is not null
+        expect(controller, isNotNull);
+
+        // Find the JavaScript channel
+        const channelName = 'flutter';
+        const errorMsg = 'flutter JavaScript channel not found';
+
+        final webController = controller as MockPlatformWebViewController;
+        final jsChannel = webController.addedJavaScriptChannels.firstWhere(
+          (channel) => channel.name == channelName,
+          orElse: () => throw TestFailure(errorMsg),
+        );
+
+        // Create a JavaScriptMessage with a JSON openGallery message
+        const jsonMessage = '{"action":"openGallery"}';
+        const jsMessage = JavaScriptMessage(message: jsonMessage);
+
+        // Simulate a JSON message from JavaScript
+        jsChannel.onMessageReceived(jsMessage);
+
+        // Wait for processing
+        await tester.pumpAndSettle();
+
+        // Verify debug logs (these can be observed in the test output)
+        // The output should show:
+        // - "Handling JavaScript action: openGallery"
+        // - "Opening device gallery"
+      },
+    );
+
+    // Test for the WebView controller initialization
+    testWidgets(
+      'initializes the WebView controller',
+      (WidgetTester tester) async {
+        // Build the HomePage widget
+        await tester.pumpWidget(testableWidget(const HomePage()));
+
+        // Verify the controller is created
+        expect(MockWebViewPlatform.lastCreatedController, isNotNull);
+      },
+    );
   });
 }

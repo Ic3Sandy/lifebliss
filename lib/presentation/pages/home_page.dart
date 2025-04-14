@@ -6,6 +6,7 @@ import 'package:flutter/services.dart'; // Required for loading assets
 import 'package:lifebliss_app/domain/services/color_service.dart';
 import 'package:lifebliss_app/presentation/pages/todo_page.dart';
 import 'package:webview_flutter/webview_flutter.dart';
+import 'package:image_picker/image_picker.dart';
 
 class HomePage extends StatefulWidget {
   final ColorService? colorService;
@@ -28,6 +29,7 @@ class _HomePageState extends State<HomePage> {
   String? _htmlContent;
   String? _cssContent;
   String? _jsContent;
+  bool _isGalleryOpening = false; // Track gallery opening state
 
   @override
   void dispose() {
@@ -55,11 +57,24 @@ class _HomePageState extends State<HomePage> {
           try {
             debugPrint('Message from JavaScript: ${message.message}');
 
-            if (message.message == 'titleClicked') {
-              debugPrint('Title click detected via JS channel!');
-              _applyRandomBackgroundColor();
-            } else if (message.message == 'channelTest') {
-              debugPrint('Channel test message received');
+            // Check if the message is a JSON string
+            if (message.message.startsWith('{') && message.message.endsWith('}')) {
+              // Try to parse as JSON
+              try {
+                final Map<String, dynamic> jsonData = jsonDecode(message.message) as Map<String, dynamic>;
+                final String? action = jsonData['action'] as String?;
+
+                if (action != null) {
+                  _handleJavaScriptAction(action);
+                }
+              } catch (e) {
+                debugPrint('Error parsing JSON message: $e');
+                // If JSON parsing fails, treat as a simple string message
+                _handleJavaScriptSimpleMessage(message.message);
+              }
+            } else {
+              // Handle as a simple string message
+              _handleJavaScriptSimpleMessage(message.message);
             }
           } on Exception catch (e) {
             debugPrint('Error processing JavaScript message: $e');
@@ -200,6 +215,115 @@ Page resource error:
         'align-items:center;height:100vh;"><h1>Error loading content</h1>'
         '</body></html>',
       );
+    }
+  }
+
+  /// Opens the device's photo gallery
+  Future<void> _openGallery() async {
+    // Prevent multiple simultaneous gallery opens
+    if (_isGalleryOpening) {
+      debugPrint('Gallery already opening, ignoring request');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Please wait, gallery is already opening')),
+        );
+      }
+      return;
+    }
+
+    try {
+      _isGalleryOpening = true;
+      debugPrint('Opening device gallery');
+
+      // Initialize image picker
+      final ImagePicker picker = ImagePicker();
+
+      // Open gallery and pick an image
+      final XFile? image = await picker.pickImage(source: ImageSource.gallery);
+
+      if (image != null) {
+        // Image was picked
+        debugPrint('Image picked: ${image.path}');
+
+        if (mounted) {
+          showDialog(
+            context: context,
+            builder: (BuildContext context) {
+              return AlertDialog(
+                title: const Text('Image Selected'),
+                content: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text('Image successfully selected from gallery:'),
+                    const SizedBox(height: 10),
+                    Text('Path: ${image.name}', style: const TextStyle(fontSize: 12)),
+                  ],
+                ),
+                actions: <Widget>[
+                  TextButton(
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
+                    child: const Text('Close'),
+                  ),
+                ],
+              );
+            },
+          );
+        }
+      } else {
+        // User canceled the picker
+        debugPrint('No image selected');
+      }
+    } catch (e) {
+      debugPrint('Error opening gallery: $e');
+      if (mounted) {
+        String errorMessage = 'Failed to open gallery';
+
+        // Check for already_active error
+        if (e.toString().contains('already_active')) {
+          errorMessage = 'Gallery is already open';
+        }
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(errorMessage)),
+        );
+      }
+    } finally {
+      // Reset flag after operation completes (with delay to prevent rapid retries)
+      Future.delayed(const Duration(seconds: 1), () {
+        _isGalleryOpening = false;
+      });
+    }
+  }
+
+  /// Handle simple string messages from JavaScript
+  void _handleJavaScriptSimpleMessage(String message) {
+    if (message == 'titleClicked') {
+      debugPrint('Title click detected via JS channel!');
+      _applyRandomBackgroundColor();
+    } else if (message == 'channelTest') {
+      debugPrint('Channel test message received');
+    } else if (message == 'openGallery') {
+      debugPrint('Open gallery request from JavaScript');
+      _openGallery();
+    }
+  }
+
+  /// Handle structured JSON action messages from JavaScript
+  void _handleJavaScriptAction(String action) {
+    debugPrint('Handling JavaScript action: $action');
+
+    switch (action) {
+      case 'titleClicked':
+        _applyRandomBackgroundColor();
+        break;
+      case 'openGallery':
+        _openGallery();
+        break;
+      default:
+        debugPrint('Unknown JavaScript action: $action');
     }
   }
 

@@ -1,7 +1,20 @@
 // Function to call Flutter with improved error handling
-function callFlutter(message) {
-    console.log("Attempting to call Flutter with: " + message);
+function callFlutter(action, params) {
+    console.log("Attempting to call Flutter with action: " + action);
     try {
+        // Create message based on the action and params
+        let message = action;
+        if (params && Object.keys(params).length > 0) {
+            try {
+                message = JSON.stringify({
+                    action: action,
+                    params: params
+                });
+            } catch (error) {
+                console.error("Error stringifying params: " + error);
+            }
+        }
+        
         // Check if Flutter channel exists with proper error handling
         if (window.flutter && typeof window.flutter.postMessage === 'function') {
             window.flutter.postMessage(message);
@@ -15,7 +28,7 @@ function callFlutter(message) {
                 console.error("Type of postMessage: " + typeof window.flutter.postMessage);
             }
             // Fall back to direct DOM manipulation
-            if (message === 'titleClicked') {
+            if (action === 'titleClicked') {
                 document.body.style.backgroundColor = "#FF8800";
             }
             return false;
@@ -56,7 +69,7 @@ function setupTitleElement() {
             
             // Then try to notify Flutter
             setTimeout(function() {
-                callFlutter("titleClicked");
+                callFlutter("titleClicked", {});
             }, 0); // Use timeout to avoid blocking the UI
         });
 
@@ -115,4 +128,61 @@ window.addEventListener('load', function() {
     
     // Check Flutter channel again
     checkFlutterChannel();
+});
+
+// Function to initialize UI
+function initializeUI() {
+  // Find existing gallery button in the HTML
+  const existingButton = document.getElementById('gallery-button');
+  
+  // If button exists in HTML, make sure it has the correct properties and listeners
+  if (existingButton) {
+    console.log("Found existing gallery button in HTML, enhancing it");
+    // Ensure the button text is correct
+    existingButton.textContent = 'Open Gallery';
+    // Add click event listener (will not duplicate if using onclick in HTML)
+    existingButton.addEventListener('click', function() {
+      callFlutter('openGallery', {});
+    });
+    // No need to create a new button
+    return;
+  }
+  
+  // Only create a new button if one doesn't exist in the HTML
+  console.log("No gallery button found in HTML, creating one");
+  const galleryButton = document.createElement('button');
+  galleryButton.id = 'gallery-button';
+  galleryButton.textContent = 'Open Gallery';
+  galleryButton.style.padding = '10px 15px';
+  galleryButton.style.margin = '10px';
+  galleryButton.style.backgroundColor = '#4CAF50';
+  galleryButton.style.color = 'white';
+  galleryButton.style.border = 'none';
+  galleryButton.style.borderRadius = '4px';
+  galleryButton.style.cursor = 'pointer';
+  
+  // Add click event listener to the gallery button
+  galleryButton.addEventListener('click', function() {
+    callFlutter('openGallery', {});
+  });
+  
+  // Find the button container or create one if it doesn't exist
+  let buttonContainer = document.querySelector('.button-container');
+  if (!buttonContainer) {
+    buttonContainer = document.createElement('div');
+    buttonContainer.className = 'button-container';
+    // Add the button container to the content div or body
+    const contentDiv = document.querySelector('.content') || document.body;
+    contentDiv.appendChild(buttonContainer);
+  }
+  
+  // Append the button to the button container
+  buttonContainer.appendChild(galleryButton);
+}
+
+// Call initializeUI when DOM is ready
+document.addEventListener('DOMContentLoaded', function() {
+  // ... existing code ...
+  
+  initializeUI();
 }); 
